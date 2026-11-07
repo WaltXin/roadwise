@@ -1,6 +1,6 @@
 import "server-only";
 
-import { asc, count, eq, sql } from "drizzle-orm";
+import { and, asc, count, eq, sql } from "drizzle-orm";
 import { connection } from "next/server";
 
 import { getDb } from "@/db";
@@ -49,13 +49,17 @@ export async function getDomain(slug: string) {
   return domain ?? null;
 }
 
-export async function getSectionCounts(domainId: string): Promise<SectionCounts> {
+export async function getSectionCounts(
+  domainId: string,
+  { needsReview = false }: { needsReview?: boolean } = {},
+): Promise<SectionCounts> {
   await connection();
   const db = getDb();
   const results = await Promise.all(
     SECTION_KEYS.map((key) => {
       const t = tableFor(key);
-      return db.select({ n: count() }).from(t).where(eq(t.domainId, domainId));
+      const where = needsReview ? and(eq(t.domainId, domainId), eq(t.origin, "ai")) : eq(t.domainId, domainId);
+      return db.select({ n: count() }).from(t).where(where);
     }),
   );
   const counts = emptyCounts();
@@ -85,9 +89,9 @@ export async function getSectionEntries(domainId: string, key: SectionKey): Prom
 export async function getSourceOptions(domainId: string) {
   await connection();
   const rows = await getDb()
-    .select({ id: sources.id, name: sources.name })
+    .select({ id: sources.id, name: sources.name, url: sources.url })
     .from(sources)
     .where(eq(sources.domainId, domainId))
     .orderBy(asc(sources.name));
-  return rows.map((r) => ({ value: r.id, label: r.name }));
+  return rows.map((r) => ({ value: r.id, label: r.name, href: r.url }));
 }

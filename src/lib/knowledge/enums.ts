@@ -1,7 +1,13 @@
 // Shared option lists for the domain knowledge base.
 // Used by the database schema (pgEnum values), validation, and the UI.
 
-type Option<V extends string> = { value: V; label: string; hint: string };
+type Option<V extends string> = {
+  value: V;
+  label: string;
+  hint: string;
+  /** Badge styling on entry cards; "hidden" omits the badge for this value. */
+  badge?: "caution" | "hidden";
+};
 
 function values<V extends string>(options: readonly Option<V>[]) {
   return options.map((o) => o.value) as [V, ...V[]];
@@ -29,6 +35,7 @@ export const SOURCE_TREATMENTS = [
     value: "lead",
     label: "Research lead",
     hint: "Claims to investigate — never accepted as fact on their own",
+    badge: "caution",
   },
 ] as const satisfies readonly Option<string>[];
 export const SOURCE_TREATMENT_VALUES = values(SOURCE_TREATMENTS);
@@ -53,3 +60,15 @@ export const QUESTION_STATUSES = [
   { value: "parked", label: "Parked", hint: "Deliberately set aside" },
 ] as const satisfies readonly Option<string>[];
 export const QUESTION_STATUS_VALUES = values(QUESTION_STATUSES);
+
+/** Who put an entry in the knowledge base. AI-researched entries await expert review. */
+export const ORIGINS = [
+  { value: "expert", label: "Expert-curated", hint: "Entered or reviewed by a domain expert", badge: "hidden" },
+  {
+    value: "ai",
+    label: "AI-researched · needs review",
+    hint: "Proposed by AI research; an expert should verify it",
+    badge: "caution",
+  },
+] as const satisfies readonly Option<string>[];
+export const ORIGIN_VALUES = values(ORIGINS);

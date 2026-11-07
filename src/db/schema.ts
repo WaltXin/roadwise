@@ -2,6 +2,7 @@ import { integer, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-
 
 import {
   CONTEXT_CATEGORY_VALUES,
+  ORIGIN_VALUES,
   QUESTION_STATUS_VALUES,
   SOURCE_KIND_VALUES,
   SOURCE_TREATMENT_VALUES,
@@ -11,6 +12,7 @@ export const sourceKind = pgEnum("source_kind", SOURCE_KIND_VALUES);
 export const sourceTreatment = pgEnum("source_treatment", SOURCE_TREATMENT_VALUES);
 export const contextCategory = pgEnum("context_category", CONTEXT_CATEGORY_VALUES);
 export const questionStatus = pgEnum("question_status", QUESTION_STATUS_VALUES);
+export const entryOrigin = pgEnum("entry_origin", ORIGIN_VALUES);
 
 const timestamps = {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -29,6 +31,9 @@ export const domains = pgTable("domains", {
   ...timestamps,
 });
 
+/** Expert-curated vs AI-researched (awaiting expert review). */
+const origin = () => entryOrigin("origin").notNull().default("expert");
+
 const domainId = () =>
   uuid("domain_id")
     .notNull()
@@ -43,6 +48,7 @@ export const sources = pgTable("sources", {
   treatment: sourceTreatment("treatment").notNull().default("evidence"),
   url: text("url"),
   notes: text("notes"),
+  origin: origin(),
   ...timestamps,
 });
 
@@ -54,6 +60,7 @@ export const contextEntries = pgTable("context_entries", {
   title: text("title").notNull(),
   description: text("description"),
   sourceId: uuid("source_id").references(() => sources.id, { onDelete: "set null" }),
+  origin: origin(),
   ...timestamps,
 });
 
@@ -66,6 +73,7 @@ export const evaluationPriorities = pgTable("evaluation_priorities", {
   measure: text("measure"),
   guardrail: text("guardrail"),
   rank: integer("rank"),
+  origin: origin(),
   ...timestamps,
 });
 
@@ -77,6 +85,8 @@ export const researchQuestions = pgTable("research_questions", {
   rationale: text("rationale"),
   status: questionStatus("status").notNull().default("open"),
   answer: text("answer"),
+  sourceId: uuid("source_id").references(() => sources.id, { onDelete: "set null" }),
+  origin: origin(),
   ...timestamps,
 });
 

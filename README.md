@@ -52,6 +52,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run lint` / `npm run typecheck` | ESLint / TypeScript |
 | `npm run db:push` | Apply `src/db/schema.ts` to the database |
 | `npm run db:seed` | Create the Voice AI domain skeleton (idempotent) |
+| `npm run db:import -- <file> [--dry-run]` | Load researched knowledge (e.g. `data/voice-ai/knowledge.json`), marked for expert review |
 | `npm run db:studio` | Browse the database in Drizzle Studio |
 
 ## Layout
@@ -65,5 +66,6 @@ src/lib/knowledge/       Section config, queries, Server Actions
 src/lib/auth/            Expert passcode gate
 src/proxy.ts             Redirects console pages to login when signed out
 scripts/seed.ts          Voice AI seed data
-docs/                    Product docs (one-pager)
+data/voice-ai/           Researched Voice AI knowledge (sources, context, evaluation, questions)
+docs/                    Product docs (one-pager) and research notes (docs/research/)
 ```

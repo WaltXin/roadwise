@@ -2,9 +2,16 @@
 // Drives the expert console's forms, lists, and server-side validation.
 // Client-safe: contains no database or server code.
 
-import { CONTEXT_CATEGORIES, QUESTION_STATUSES, SOURCE_KINDS, SOURCE_TREATMENTS } from "./enums";
+import { CONTEXT_CATEGORIES, ORIGINS, QUESTION_STATUSES, SOURCE_KINDS, SOURCE_TREATMENTS } from "./enums";
 
-export type SelectOption = { value: string; label: string; hint?: string };
+export type SelectOption = {
+  value: string;
+  label: string;
+  hint?: string;
+  badge?: "caution" | "hidden";
+  /** For source references: where the source lives. */
+  href?: string | null;
+};
 
 type BaseField = {
   name: string;
@@ -45,6 +52,17 @@ export type SectionDef = {
   groupBy?: string;
 };
 
+/** Shared by every section: who put the entry here. */
+const ORIGIN_FIELD: FieldDef = {
+  name: "origin",
+  label: "Provenance",
+  kind: "select",
+  options: ORIGINS,
+  required: true,
+  defaultValue: "expert",
+  help: "After verifying an AI-researched entry, switch it to Expert-curated.",
+};
+
 export const SECTIONS: Record<SectionKey, SectionDef> = {
   sources: {
     key: "sources",
@@ -78,10 +96,11 @@ export const SECTIONS: Record<SectionKey, SectionDef> = {
         wide: true,
         placeholder: "What is this source good for? What should the consultant watch out for?",
       },
+      ORIGIN_FIELD,
     ],
     titleField: "name",
     bodyFields: ["notes"],
-    badgeFields: ["kind", "treatment"],
+    badgeFields: ["kind", "treatment", "origin"],
   },
 
   context: {
@@ -106,11 +125,12 @@ export const SECTIONS: Record<SectionKey, SectionDef> = {
         wide: true,
         placeholder: "Explain it, with the nuance that matters when making product decisions.",
       },
-      { name: "sourceId", label: "Supporting source", kind: "source", wide: true },
+      { name: "sourceId", label: "Supporting source", kind: "source" },
+      ORIGIN_FIELD,
     ],
     titleField: "title",
     bodyFields: ["description"],
-    badgeFields: [],
+    badgeFields: ["origin"],
     groupBy: "category",
   },
 
@@ -147,10 +167,11 @@ export const SECTIONS: Record<SectionKey, SectionDef> = {
         kind: "textarea",
         placeholder: "What must stay true when trading this off against other priorities",
       },
+      { ...ORIGIN_FIELD, wide: true },
     ],
     titleField: "name",
     bodyFields: ["description", "measure", "guardrail"],
-    badgeFields: [],
+    badgeFields: ["origin"],
   },
 
   questions: {
@@ -188,6 +209,7 @@ export const SECTIONS: Record<SectionKey, SectionDef> = {
         required: true,
         defaultValue: "open",
       },
+      ORIGIN_FIELD,
       {
         name: "answer",
         label: "Current answer",
@@ -195,10 +217,16 @@ export const SECTIONS: Record<SectionKey, SectionDef> = {
         wide: true,
         placeholder: "What we know so far, and what it rests on. Leave empty if unresolved.",
       },
+      {
+        name: "sourceId",
+        label: "Prompted by",
+        kind: "source",
+        help: "The development or source behind this question.",
+      },
     ],
     titleField: "question",
     bodyFields: ["rationale", "answer"],
-    badgeFields: ["status"],
+    badgeFields: ["status", "origin"],
   },
 };
 
@@ -210,10 +238,14 @@ export function fieldLabel(section: SectionDef, name: string) {
   return section.fields.find((f) => f.name === name)?.label ?? name;
 }
 
-export function optionLabel(section: SectionDef, fieldName: string, value: string) {
+export function findOption(section: SectionDef, fieldName: string, value: string): SelectOption | undefined {
   const field = section.fields.find((f) => f.name === fieldName);
-  if (field?.kind !== "select") return value;
-  return field.options.find((o) => o.value === value)?.label ?? value;
+  if (field?.kind !== "select") return undefined;
+  return field.options.find((o) => o.value === value);
+}
+
+export function optionLabel(section: SectionDef, fieldName: string, value: string) {
+  return findOption(section, fieldName, value)?.label ?? value;
 }
 
 /** Plain, serializable shape of an entry as passed to client components. */

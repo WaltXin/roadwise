@@ -1,0 +1,999 @@
+{
+  "domain": "voice-ai",
+  "researchedAt": "2026-11-07",
+  "sources": [
+    {
+      "key": "vapi-changelog",
+      "name": "Vapi – What's New (changelog)",
+      "url": "https://docs.vapi.ai/whats-new",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Dated, frequent platform release notes on simulations/evals, latency limits, provider fallbacks and GPT-Live support (e.g., Oct 5 2026 simulation latency limits). Good signal for which features developer platforms consider table stakes."
+    },
+    {
+      "key": "retell-changelog",
+      "name": "Retell AI platform changelog",
+      "url": "https://www.retellai.com/changelog",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Dated releases covering GPT-Live-1 adoption (Nov 2 2026), live call monitoring that scores interruptions and latency, and scenario simulation. Any benchmark linked from it is self-published, so treat it as a lead."
+    },
+    {
+      "key": "elevenlabs-changelog",
+      "name": "ElevenLabs docs changelog",
+      "url": "https://elevenlabs.io/docs/changelog",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Weekly, detailed changes to the ElevenAgents platform: Eleven Realtime speech-to-speech, the turn_prediction commit strategy, LLM deprecations, timeout fixes. Very long page, so read by date range."
+    },
+    {
+      "key": "livekit-agents-docs",
+      "name": "LiveKit Agents docs",
+      "url": "https://docs.livekit.io/agents/",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Primary docs for the most widely used open-source voice agent framework (turn handling, telephony, observability). Mistral's Voxtral 3 agent SDK is reportedly built on it, which makes it an ecosystem bellwether."
+    },
+    {
+      "key": "livekit-turn-detector",
+      "name": "LiveKit turn detector docs",
+      "url": "https://docs.livekit.io/agents/logic/turns/turn-detector/",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Docs for LiveKit's open-weights end-of-turn model, which runs alongside VAD. Useful when diagnosing premature cutoffs and interruptions."
+    },
+    {
+      "key": "pipecat-releases",
+      "name": "Pipecat GitHub releases",
+      "url": "https://github.com/pipecat-ai/pipecat/releases",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Release notes for Daily's open-source voice agent framework. New provider integrations and turn-taking changes show up here first."
+    },
+    {
+      "key": "pipecat-smart-turn",
+      "name": "Smart Turn (Pipecat) turn-detection model",
+      "url": "https://github.com/pipecat-ai/smart-turn",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Open-source (BSD-2) audio-native turn-detection model, currently v3.2. Use it as a baseline when evaluating endpointing and interruption behavior."
+    },
+    {
+      "key": "twilio-changelog",
+      "name": "Twilio product changelog",
+      "url": "https://www.twilio.com/en-us/changelog",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Telephony-layer changes (SIP, media streams, ConversationRelay) that affect PSTN voice agents. Many reported production failures happen at the telephony layer, not the model."
+    },
+    {
+      "key": "openai-api-changelog",
+      "name": "OpenAI API changelog",
+      "url": "https://developers.openai.com/api/docs/changelog",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Authoritative dates for realtime/voice model releases and deprecations (gpt-realtime-2, GPT-Live-1, the whisper-1/gpt-4o-transcribe shutdown on Feb 26 2027). Check it for any migration deadline that affects a customer's stack."
+    },
+    {
+      "key": "gemini-api-release-notes",
+      "name": "Gemini API release notes",
+      "url": "https://aistudio.google.com/docs/changelog",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Dated releases for Live API models (gemini-3.8-live GA Sep 15 2026), streaming transcription and TTS. Moved from ai.google.dev to aistudio.google.com."
+    },
+    {
+      "key": "amazon-nova-sonic-docs",
+      "name": "Amazon Nova 2 Sonic speech-to-speech docs",
+      "url": "https://docs.aws.amazon.com/nova/latest/nova2-userguide/using-conversational-speech.html",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Primary docs for AWS's speech-to-speech model. Relevant for customers on AWS/Bedrock or Amazon Connect."
+    },
+    {
+      "key": "deepgram-changelog",
+      "name": "Deepgram changelog",
+      "url": "https://developers.deepgram.com/changelog",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Dated STT/TTS/Voice Agent API changes, including Flux conversational STT with end-of-turn (Force End Turn) and Nova-3 keyterm updates. Watch for action-required breaking changes (e.g., the Oct 2026 self-hosted Flux runtime)."
+    },
+    {
+      "key": "assemblyai-changelog",
+      "name": "AssemblyAI changelog",
+      "url": "https://www.assemblyai.com/changelog",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "STT vendor changelog, now expanding into TTS (reported late Oct 2026). Our fetch couldn't extract dated entries, so read it manually."
+    },
+    {
+      "key": "cartesia-changelog",
+      "name": "Cartesia changelog (2026)",
+      "url": "https://docs.cartesia.ai/changelog/2026",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "TTS (Sonic 3.5/3.6) and STT (Ink-2 with built-in turn detection and semantic endpointing) releases, plus Managed Agents. Shows a TTS vendor moving into a full agent platform."
+    },
+    {
+      "key": "rime-resources",
+      "name": "Rime resources/blog",
+      "url": "https://www.rime.ai/resources",
+      "kind": "company",
+      "treatment": "lead",
+      "notes": "TTS vendor announcements, including Prism, a 'composable' speech-to-speech model (Oct 28 2026), and a new STT (Oct 20 2026). Claims are self-reported, so verify them before relying on them."
+    },
+    {
+      "key": "mistral-news",
+      "name": "Mistral news (Voxtral)",
+      "url": "https://mistral.ai/news/",
+      "kind": "company",
+      "treatment": "lead",
+      "notes": "Announcements of the Voxtral speech models, including Voxtral 3 with a voice agent API (Oct 20 2026). Relevant for EU-hosted or self-hosted requirements; check pricing and latency claims against the docs."
+    },
+    {
+      "key": "sierra-blog",
+      "name": "Sierra news & blog",
+      "url": "https://sierra.ai/blog",
+      "kind": "company",
+      "treatment": "lead",
+      "notes": "Enterprise agent vendor and the team behind the τ-bench/τ-Voice benchmarks. Product posts are marketing, but research releases link to open benchmarks."
+    },
+    {
+      "key": "polyai-blog",
+      "name": "PolyAI blog",
+      "url": "https://poly.ai/resources/blog",
+      "kind": "company",
+      "treatment": "lead",
+      "notes": "Enterprise contact-center voice agent vendor and a view into enterprise buyer priorities. Marketing-heavy, so treat outcome stats as leads."
+    },
+    {
+      "key": "livekit-blog",
+      "name": "LiveKit blog",
+      "url": "https://livekit.com/blog",
+      "kind": "technical_blog",
+      "treatment": "lead",
+      "notes": "Mixes strong engineering posts (short-utterance debugging, inference speed, agent simulations) with vendor comparisons and case studies. Use the engineering posts for failure-mode hypotheses and discount the comparisons."
+    },
+    {
+      "key": "livekit-short-utterances",
+      "name": "LiveKit: Debugging short utterances in voice agents",
+      "url": "https://livekit.com/blog/short-utterances",
+      "kind": "technical_blog",
+      "treatment": "evidence",
+      "notes": "Aug 24 2026 diagnostic guide for agents going silent after 'yes'/'no' (missing STT finals, endpointing, noise cancellation, telephony). A concrete checklist to turn into evals."
+    },
+    {
+      "key": "daily-pipecat-blog",
+      "name": "Daily blog – Pipecat tag",
+      "url": "https://www.daily.co/blog/tag/pipecat/",
+      "kind": "technical_blog",
+      "treatment": "lead",
+      "notes": "Engineering write-ups from the Pipecat maintainers on turn detection, latency and interruptions. Vendor-authored, so cross-check performance numbers."
+    },
+    {
+      "key": "voice-ai-primer",
+      "name": "Voice AI & Voice Agents: An Illustrated Primer",
+      "url": "https://voiceaiandvoiceagents.com/",
+      "kind": "technical_blog",
+      "treatment": "lead",
+      "notes": "Comprehensive practitioner guide (updated June 2026) to latency budgets, turn detection (VAD + Smart Turn + LLM tagging), interruptions, telephony and evals. Written from a Pipecat perspective, so treat recommended targets as conventions, not measurements."
+    },
+    {
+      "key": "codebridge-latency-benchmark",
+      "name": "Codebridge voice AI latency benchmark (499 calls)",
+      "url": "https://www.codebridge.tech/articles/voice-ai-phone-agents-latency-benchmark",
+      "kind": "technical_blog",
+      "treatment": "lead",
+      "notes": "Aug 2026 end-to-end latency tests across speech-to-speech, cascade, ElevenAgents and LiveKit stacks; no stack handled a 680 ms mid-sentence pause. Run by a consultancy on small samples with no telephony and raw data only on request, so it is not independent evidence."
+    },
+    {
+      "key": "gabriel-skantze",
+      "name": "Gabriel Skantze (KTH)",
+      "url": "https://www.kth.se/profile/skantze",
+      "kind": "researcher",
+      "treatment": "evidence",
+      "notes": "Leading turn-taking researcher (Voice Activity Projection, TurnGPT, end-of-turn and interruption modeling). Primary source for the science behind endpointing."
+    },
+    {
+      "key": "hung-yi-lee",
+      "name": "Hung-yi Lee (NTU)",
+      "url": "https://speech.ee.ntu.edu.tw/~hylee/index.php",
+      "kind": "researcher",
+      "treatment": "evidence",
+      "notes": "Speech LLM and spoken dialogue researcher, co-author of Full-Duplex-Bench. Track his group for evaluation methods for full-duplex models."
+    },
+    {
+      "key": "kyutai-lab",
+      "name": "Kyutai (open-science lab) blog",
+      "url": "https://kyutai.org/blog/",
+      "kind": "researcher",
+      "treatment": "evidence",
+      "notes": "Lab behind Moshi, Unmute, open streaming STT/TTS, and 2026 work on RL post-training for full-duplex interactivity and MoshiRAG. Open weights make claims reproducible."
+    },
+    {
+      "key": "moshi-paper",
+      "name": "Moshi: a speech-text foundation model for real-time dialogue (arXiv 2410.00037)",
+      "url": "https://arxiv.org/abs/2410.00037",
+      "kind": "research_paper",
+      "treatment": "evidence",
+      "notes": "Landmark open full-duplex spoken dialogue model. The reference point for speech-to-speech vs cascade architecture debates."
+    },
+    {
+      "key": "full-duplex-bench",
+      "name": "Full-Duplex-Bench (arXiv 2503.04721)",
+      "url": "https://arxiv.org/abs/2503.04721",
+      "kind": "research_paper",
+      "treatment": "evidence",
+      "notes": "Benchmark for pause handling, backchanneling, turn-taking and interruption response in full-duplex models (ASRU 2025). Good template for interruption evals."
+    },
+    {
+      "key": "tau-voice",
+      "name": "τ-Voice: Benchmarking Full-Duplex Voice Agents on Real-World Domains (arXiv 2603.13686)",
+      "url": "https://arxiv.org/abs/2603.13686",
+      "kind": "research_paper",
+      "treatment": "evidence",
+      "notes": "Mar 2026 task-completion benchmark (278 tasks): voice agents scored 31–51% clean and 26–38% with noise and accents, vs 85% for text GPT-5, and 79–90% of failures came from agent behavior. Authors include Sierra researchers, a vendor with an interest in the result."
+    },
+    {
+      "key": "vap-paper",
+      "name": "Voice Activity Projection: Self-supervised Learning of Turn-taking Events (arXiv 2205.09812)",
+      "url": "https://arxiv.org/abs/2205.09812",
+      "kind": "research_paper",
+      "treatment": "evidence",
+      "notes": "Foundational predictive turn-taking model (Ekstedt & Skantze). Background for why silence-threshold endpointing fails."
+    },
+    {
+      "key": "isca-archive",
+      "name": "ISCA Archive (Interspeech proceedings)",
+      "url": "https://www.isca-archive.org/",
+      "kind": "research_paper",
+      "treatment": "evidence",
+      "notes": "Open-access proceedings for Interspeech and ISCA workshops. Search here for peer-reviewed STT, TTS and dialogue results."
+    },
+    {
+      "key": "interspeech",
+      "name": "Interspeech 2026",
+      "url": "https://interspeech2026.org/en-AU",
+      "kind": "event",
+      "treatment": "lead",
+      "notes": "Premier annual speech science and technology conference. Talks are leads; the papers in the ISCA Archive are the evidence."
+    },
+    {
+      "key": "icassp-2027",
+      "name": "ICASSP 2027 (Toronto)",
+      "url": "https://2027.ieeeicassp.org/",
+      "kind": "event",
+      "treatment": "lead",
+      "notes": "Major IEEE speech/signal processing conference, reported for May 16–21 2027. Watch for accepted papers on speech LLMs, STT and TTS."
+    },
+    {
+      "key": "sigdial",
+      "name": "SIGDIAL",
+      "url": "https://www.sigdial.org/",
+      "kind": "event",
+      "treatment": "lead",
+      "notes": "ACL special interest group and conference on discourse and dialogue; core venue for turn-taking research. Papers are in the ACL Anthology."
+    },
+    {
+      "key": "vapicon-2026",
+      "name": "VapiCon 2026",
+      "url": "https://vapi.ai/vapicon-2026",
+      "kind": "event",
+      "treatment": "lead",
+      "notes": "Vendor-hosted voice AI summit in San Francisco, Nov 11–12 2026, focused on deployment and continuous agent improvement. Expect launches and customer claims to verify."
+    },
+    {
+      "key": "g2-ai-voice-assistants",
+      "name": "G2 – AI Voice Assistants category",
+      "url": "https://www.g2.com/categories/ai-voice-assistants",
+      "kind": "customer",
+      "treatment": "lead",
+      "notes": "Buyer reviews of voice agent platforms (Retell, ElevenLabs, Synthflow, etc.). Blocks automated fetching (403); existence confirmed only through search results, so it needs a manual or browser check."
+    },
+    {
+      "key": "livekit-customers",
+      "name": "LiveKit customer stories",
+      "url": "https://livekit.com/customers",
+      "kind": "customer",
+      "treatment": "lead",
+      "notes": "Case studies of production voice agents (healthcare patient access, enterprise contact centers). Vendor-curated, so use them for workflow and buyer context, not outcome numbers."
+    },
+    {
+      "key": "hn-voice-agent-search",
+      "name": "Hacker News search: voice agent",
+      "url": "https://hn.algolia.com/?q=voice%20agent",
+      "kind": "customer",
+      "treatment": "lead",
+      "notes": "Builder and buyer discussion threads on launches, benchmarks and production pain points. Anecdotal, but often surfaces failure modes early."
+    },
+    {
+      "key": "krisp-voice-ai-newsletter",
+      "name": "Voice AI Newsletter (Krisp CEO)",
+      "url": "https://voice-ai-newsletter.krisp.ai/",
+      "kind": "community",
+      "treatment": "lead",
+      "notes": "Substack by Krisp CEO Davit Baghdasaryan (5,000+ subscribers), with the companion podcast 'The Future of Voice AI'. Industry commentary from a vendor."
+    },
+    {
+      "key": "voiceaispace-news",
+      "name": "Voice AI Space News Room",
+      "url": "https://www.voiceaispace.com/news",
+      "kind": "community",
+      "treatment": "lead",
+      "notes": "Roughly weekly roundups of voice AI launches and funding (e.g., Week 44, Oct 26–Nov 1 2026). Good discovery feed; confirm each item at the primary source."
+    },
+    {
+      "key": "artificial-analysis-s2s",
+      "name": "Artificial Analysis – Speech to Speech",
+      "url": "https://artificialanalysis.ai/speech-to-speech",
+      "kind": "community",
+      "treatment": "evidence",
+      "notes": "Independent comparison of speech-to-speech models and providers on quality, latency and price; sibling pages cover TTS and STT. Check methodology and test date before citing."
+    },
+    {
+      "key": "fcc-24-17",
+      "name": "FCC Declaratory Ruling FCC 24-17 (AI-generated voices under the TCPA), CG Docket 23-362",
+      "url": "https://docs.fcc.gov/public/attachments/FCC-24-17A1.pdf",
+      "kind": "other",
+      "treatment": "evidence",
+      "notes": "Primary text. Adopted Feb 2, 2024, released Feb 8, 2024. Confirms that AI voices are 'artificial or prerecorded voice' under the TCPA and need prior express consent unless there is an emergency purpose or an exemption."
+    },
+    {
+      "key": "fcc-ai-nprm",
+      "name": "Federal Register: FCC NPRM/NOI on AI-generated calls and texts (FCC 24-84)",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2024-09-10/html/2024-19028.htm",
+      "kind": "other",
+      "treatment": "evidence",
+      "notes": "Proposed rules only. They would define 'AI-generated call', require AI disclosure when consent is obtained and at the start of the call, and leave out tech that answers inbound calls. No final order could be confirmed as of Nov 2026."
+    },
+    {
+      "key": "fcc-revoke-all-delay",
+      "name": "Burr & Forman: FCC delays TCPA revoke-all rule to Jan 31, 2027",
+      "url": "https://www.burr.com/telephone-consumer-protection-act/the-fcc-delays-effective-date-of-tcpa-revoke-all-rule-until-january-31-2027",
+      "kind": "other",
+      "treatment": "evidence",
+      "notes": "Law-firm summary of the FCC's Jan 6, 2026 order delaying 47 CFR 64.1200(a)(10). The FCC says it may change the rule, so check the date before relying on it."
+    },
+    {
+      "key": "eu-ai-act-omnibus",
+      "name": "Cooley: Digital AI Omnibus delays key deadlines (Aug 3, 2026)",
+      "url": "https://cdp.cooley.com/digital-ai-omnibus-delays-key-deadlines-introduces-new-rules/",
+      "kind": "other",
+      "treatment": "evidence",
+      "notes": "Regulation (EU) 2026/1744 came into force Jul 27, 2026. Article 50 transparency duties stay on the Aug 2, 2026 schedule. One other firm (Goodwin) reported a different reading, so this needs counsel review."
+    },
+    {
+      "key": "utah-sb226",
+      "name": "Orrick InfoBytes: Utah enacts AI disclosure law for consumer transactions (SB 226)",
+      "url": "http://infobytes.orrick.com/2025-04-25/utah-enacts-ai-disclosure-law-for-consumer-transactions/",
+      "kind": "other",
+      "treatment": "evidence",
+      "notes": "Effective May 7, 2025. Businesses must disclose AI use when a consumer asks, with a safe harbor for disclosing at the start of the interaction and throughout it. Penalty is up to $2,500 per violation. The enrolled bill text was not reviewed."
+    },
+    {
+      "key": "hipaa-cloud",
+      "name": "Hunton: HHS releases guidance on HIPAA and cloud computing (Oct 2016)",
+      "url": "https://www.hunton.com/privacy-and-cybersecurity-law-blog/hhs-releases-guidance-hipaa-cloud-computing",
+      "kind": "other",
+      "treatment": "evidence",
+      "notes": "Summary of HHS OCR guidance. Covered entities need a BAA with any cloud provider that handles ePHI. The HHS page itself blocked automated fetching."
+    },
+    {
+      "key": "pci-telephone",
+      "name": "PCI SSC blog: Industry guidance on accepting telephone payments securely (Nov 2018)",
+      "url": "https://blog.pcisecuritystandards.org/industry-guidance-on-accepting-telephone-payments-securely",
+      "kind": "other",
+      "treatment": "evidence",
+      "notes": "Announces the 'Protecting Telephone-Based Payment Card Data' v3.0 supplement. It covers VoIP's effect on PCI DSS scope and card data in call recordings. Old, but still the standards body's guidance."
+    },
+    {
+      "key": "gartner-ai-cs-survey-2024",
+      "name": "CX Today on Gartner survey: customers reject AI for customer service (Jul 9, 2024)",
+      "url": "https://www.cxtoday.com/conversational-ai/customers-reject-ai-for-customer-service-still-crave-a-human-touch/",
+      "kind": "other",
+      "treatment": "evidence",
+      "notes": "Trade-press write-up of a Gartner survey of almost 6,000 customers: 64% would prefer companies not use AI for service, and 60% worry it makes reaching a human harder. Gartner's own page blocks fetching."
+    },
+    {
+      "key": "gartner-workforce-2025",
+      "name": "Gartner (via CMSWire): 50% of orgs will abandon plans to reduce customer service workforce due to AI (Jun 10, 2025)",
+      "url": "https://www.cmswire.com/the-wire/gartner-predicts-50-of-organizations-will-abandon-plans-to-reduce-customer-service-workforce-due-to-ai",
+      "kind": "other",
+      "treatment": "evidence",
+      "notes": "Copy of the press release. The poll is 163 service leaders in March 2025, with 95% keeping human agents. The 50% figure is a forecast, not a measurement."
+    },
+    {
+      "key": "clutch-ivr-2019",
+      "name": "Clutch survey: nearly 90% prefer speaking to a live agent over phone menus (Apr 2019)",
+      "url": "https://clutch.co/press-releases/nearly-90-people-prefer-speaking-live-customer-service-agent-phone-despite",
+      "kind": "other",
+      "treatment": "evidence",
+      "notes": "501 US callers. It is dated and predates LLMs, but it is independent data on IVR frustration. Page blocks automated fetching; verify manually."
+    },
+    {
+      "key": "beckers-relatient-2025",
+      "name": "Becker's Hospital Review x Relatient 2025 Patient Access Survey",
+      "url": "https://www.relatient.com/beckers-relatient-research-study-2025/",
+      "kind": "other",
+      "treatment": "lead",
+      "notes": "Co-produced by a scheduling vendor, with no sample size or method published. Directional only."
+    },
+    {
+      "key": "servicedirect-mightycall",
+      "name": "MightyCall: Businesses aren't answering the phone as much as they think (cites Service Direct study)",
+      "url": "https://www.mightycall.com/blog/research-businesses-arent-answering-the-phone-as-much-as-they-think/",
+      "kind": "company",
+      "treatment": "lead",
+      "notes": "Vendor blog citing a second vendor's study, with no sample size or dates. The SMB missed-call evidence found is thin and every figure comes from vendors."
+    },
+    {
+      "key": "twilio-latency-guide",
+      "name": "Twilio: A Guide to Core Latency in AI Voice Agents (Cascaded Edition), Nov 17, 2025",
+      "url": "https://www.twilio.com/en-us/blog/developers/best-practices/guide-core-latency-ai-voice-agents",
+      "kind": "technical_blog",
+      "treatment": "evidence",
+      "notes": "Defines mouth-to-ear vs platform turn gap and gives Twilio's own 'starting benchmark' medians. The thresholds are vendor guidance, not an industry standard."
+    },
+    {
+      "key": "twilio-media-streams",
+      "name": "Twilio Docs: Media Streams WebSocket messages",
+      "url": "https://www.twilio.com/docs/voice/media-streams/websocket-messages",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Primary docs. Media payloads are audio/x-mulaw at 8000 Hz, base64-encoded."
+    },
+    {
+      "key": "openai-voice-agents-guide",
+      "name": "OpenAI Docs: Voice agents guide",
+      "url": "https://developers.openai.com/docs/guides/voice-agents",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Describes the Realtime (speech-to-speech) path and the chained STT, agent, TTS path. It recommends chained when each stage must be visible or replaceable."
+    },
+    {
+      "key": "openai-gpt-realtime-model",
+      "name": "OpenAI Docs: gpt-realtime model page",
+      "url": "https://developers.openai.com/api/docs/models/gpt-realtime",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "First GA realtime model (snapshot 2025-08-28), connects over WebRTC, WebSocket or SIP. The page now lists it as deprecated in favour of later versions."
+    },
+    {
+      "key": "openai-pricing",
+      "name": "OpenAI API pricing page",
+      "url": "https://developers.openai.com/api/docs/pricing",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "As fetched Nov 2026: gpt-realtime-2.1 is $32/$64 per 1M audio input/output tokens and the mini is $10/$20. Prices change."
+    },
+    {
+      "key": "retell-pricing",
+      "name": "Retell AI pricing page",
+      "url": "https://www.retellai.com/pricing",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Primary source for one platform's per-minute cost stack, as fetched Nov 2026. It shows how bundled platforms price, not market averages."
+    },
+    {
+      "key": "sierra-outcome-pricing",
+      "name": "Sierra: Outcome-based pricing for AI agents (Dec 10, 2024)",
+      "url": "https://sierra.ai/blog/outcome-based-pricing-for-ai-agents",
+      "kind": "company",
+      "treatment": "lead",
+      "notes": "Vendor position piece: charge for resolved conversations and other outcomes, generally not for unresolved or escalated ones. It does not mention voice."
+    },
+    {
+      "key": "kaizo-containment",
+      "name": "Kaizo: What is containment rate? Definition and why it can mislead (Jul 2026)",
+      "url": "https://kaizo.com/blog/what-is-containment-rate/",
+      "kind": "technical_blog",
+      "treatment": "lead",
+      "notes": "Vendor glossary, but the containment-vs-resolution distinction matches other sources. It notes that a caller who hangs up counts as 'contained'."
+    },
+    {
+      "key": "pipecat-github",
+      "name": "Pipecat (GitHub): open-source voice agent framework",
+      "url": "https://github.com/pipecat-ai/pipecat",
+      "kind": "community",
+      "treatment": "evidence",
+      "notes": "BSD-2-Clause. Supports many STT/LLM/TTS providers, speech-to-speech models and telephony serializers, which makes it a reference point for build-vs-buy."
+    },
+    {
+      "key": "livekit-fallback-docs",
+      "name": "LiveKit Docs: Fallback strategies",
+      "url": "https://docs.livekit.io/agents/logic/fallback-strategies/",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Primary docs on STT/LLM/TTS/realtime failover behaviour and its limits, for example no TTS switch mid-utterance."
+    },
+    {
+      "key": "livekit-eot-v041",
+      "name": "LiveKit: Improved end-of-turn model cuts voice AI interruptions 39% (Dec 12, 2025)",
+      "url": "https://livekit.com/blog/improved-end-of-turn-model-cuts-voice-ai-interruptions-39",
+      "kind": "technical_blog",
+      "treatment": "lead",
+      "notes": "Vendor-reported. Metric is false-positive rate at a fixed 99.3% true-positive rate, 18.66% falling to 11.34%."
+    },
+    {
+      "key": "livekit-adaptive-interruption",
+      "name": "LiveKit: Adaptive interruption handling (Mar 19, 2026)",
+      "url": "https://livekit.com/blog/adaptive-interruption-handling",
+      "kind": "technical_blog",
+      "treatment": "lead",
+      "notes": "Vendor-reported: 86% precision and 100% recall at 500 ms overlap, and 51% of VAD barge-ins rejected. The held-out set is not described."
+    },
+    {
+      "key": "deepgram-flux",
+      "name": "Deepgram: Introducing Flux, conversational speech recognition (Oct 1, 2025)",
+      "url": "https://deepgram.com/learn/introducing-flux-conversational-speech-recognition",
+      "kind": "technical_blog",
+      "treatment": "lead",
+      "notes": "STT with built-in end-of-turn detection. Its latency and false-interruption claims are self-reported. Eager EoT fires 150-250 ms earlier at a cost of 50-70% more LLM calls."
+    },
+    {
+      "key": "smart-turn-v32",
+      "name": "Daily: Smart Turn v3.2, handling noisy environments and short responses (Jan 7, 2026)",
+      "url": "https://www.daily.co/blog/smart-turn-v3-2-handling-noisy-environments-and-short-responses/",
+      "kind": "technical_blog",
+      "treatment": "lead",
+      "notes": "Open audio turn-detection model. Vendor reports short utterances like 'yes'/'okay' are misclassified 40% less often, with no absolute rates given."
+    },
+    {
+      "key": "duplexworld",
+      "name": "DuplexWorld: Can voice agents help you get through the day? (arXiv 2608.10716, Aug 2026)",
+      "url": "https://arxiv.org/abs/2608.10716",
+      "kind": "research_paper",
+      "treatment": "evidence",
+      "notes": "Preprint benchmark of speech-to-speech agents across six domains. Best reported Pass@1 is 0.490 and turn-taking 0.653."
+    },
+    {
+      "key": "personaplex",
+      "name": "NVIDIA Research: PersonaPlex (Jan 15, 2026)",
+      "url": "https://research.nvidia.com/labs/adlr/personaplex",
+      "kind": "researcher",
+      "treatment": "lead",
+      "notes": "Open full-duplex 7B model fine-tuned from Kyutai Moshi. Code is MIT, weights are under the NVIDIA Open Model License. Benchmark claims are self-reported."
+    },
+    {
+      "key": "street-names-asr",
+      "name": "\"Sorry, I Didn't Catch That\": How Speech Models Miss What Matters Most (arXiv 2602.12249, Feb 2026)",
+      "url": "https://arxiv.org/abs/2602.12249",
+      "kind": "research_paper",
+      "treatment": "evidence",
+      "notes": "15 commercial ASR models averaged a 44% error rate on US street names. Downstream routing errors were twice as large for speakers whose primary language is not English."
+    },
+    {
+      "key": "llm-judge-voice",
+      "name": "Benchmarking LLM Judges for Voice-Agent Evaluation (arXiv 2608.24314, Aug 2026)",
+      "url": "https://arxiv.org/abs/2608.24314",
+      "kind": "research_paper",
+      "treatment": "evidence",
+      "notes": "LLM judges are useful at scale, but reliability depends on the metric. Recovery Turn Count and safety-recall were unreliable for fully automated judging, so the authors recommend hybrid human review."
+    },
+    {
+      "key": "moffatt-air-canada",
+      "name": "Barry Sookman: Moffatt v. Air Canada (2024 BCCRT 149), misrepresentation by an AI chatbot",
+      "url": "https://barrysookman.com/2024/02/16/moffatt-v-air-canada-a-misrepresentation-by-an-ai-chatbot/",
+      "kind": "other",
+      "treatment": "evidence",
+      "notes": "Legal commentary on a tribunal decision. It is a chat case, not voice, and not binding precedent, but widely cited on liability for what automated agents tell customers."
+    },
+    {
+      "key": "coval-docs",
+      "name": "Coval documentation",
+      "url": "https://docs.coval.ai/llms.txt",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Primary product docs: connection types, personas, test sets, metric definitions (e.g. latency, interruption rate), uploaded conversations, alerts, human review, CI. Good for exact mechanics; documents capabilities, not outcomes."
+    },
+    {
+      "key": "coval-changelog",
+      "name": "Coval changelog",
+      "url": "https://docs.coval.ai/changelog",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Dated product changes from May 2026 onward (connector, Sofia investigations, 1,000-concurrent load tests, Agentic judge, SQL metrics GA). Good for tracking eval-tooling trends; no entries before May 2026."
+    },
+    {
+      "key": "coval-pricing",
+      "name": "Coval pricing page",
+      "url": "https://www.coval.ai/pricing",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Published list prices: Starter $100/mo, Growth $500/mo, Enterprise from $4,500/mo; priced on simulation vs upload minutes. List prices only; actual deals may differ."
+    },
+    {
+      "key": "coval-site",
+      "name": "Coval marketing site",
+      "url": "https://www.coval.ai/",
+      "kind": "company",
+      "treatment": "lead",
+      "notes": "Customer logos (Chime, Perplexity, ServiceNow, StubHub, Zoom, Toast, Upstart) and figures (217% accuracy gain, 3.1M metrics/week) are unattributed vendor claims."
+    },
+    {
+      "key": "coval-series-a-tnw",
+      "name": "TNW: Coval raises $28M Series A",
+      "url": "https://thenextweb.com/news/coval-28m-series-a-voice-ai-testing",
+      "kind": "other",
+      "treatment": "lead",
+      "notes": "Press coverage dated 2026-06-25: Norwest lead, $31M total, Zoom and Deepgram named. Usage and impact numbers (60+ orgs, 30x less QA, 10x revenue) are company-stated."
+    },
+    {
+      "key": "hamming-site",
+      "name": "Hamming AI",
+      "url": "https://hamming.ai",
+      "kind": "company",
+      "treatment": "lead",
+      "notes": "Competitor positioned on security, red-teaming and compliance plus testing and monitoring; claims 50K+ concurrent calls and 95%+ human agreement."
+    },
+    {
+      "key": "cekura-site",
+      "name": "Cekura (formerly Vocera)",
+      "url": "https://www.cekura.ai",
+      "kind": "company",
+      "treatment": "lead",
+      "notes": "Competitor emphasizing a self-improvement loop (reproduce, suggest prompt patch, release gate) and vendor bake-offs. YC F24, $2.4M seed in Jul 2025 per press."
+    },
+    {
+      "key": "roark-site",
+      "name": "Roark",
+      "url": "https://roark.ai",
+      "kind": "company",
+      "treatment": "lead",
+      "notes": "Competitor focused on production call analytics (claims 500+ metrics, audio-native scoring) and Roark Live Bench, a public voice-stack leaderboard and possible industry signal source."
+    },
+    {
+      "key": "vapi-simulations-docs",
+      "name": "Vapi Simulations docs",
+      "url": "https://docs.vapi.ai/observability/simulations-overview",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Platform-native alternative: scenario plus personality, voice or chat mode, structured-output scoring, latency gates in voice mode. Older Test Suites are being deprecated."
+    },
+    {
+      "key": "retell-simulation-docs",
+      "name": "Retell LLM Simulation Testing docs",
+      "url": "https://docs.retellai.com/test/llm-simulation-testing",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Platform-native alternative: text-only simulation, one pass/fail LLM judgment over all criteria, batch API usable for CI. Cannot test audio or latency hypotheses."
+    },
+    {
+      "key": "elevenlabs-testing-docs",
+      "name": "ElevenLabs Agent Testing docs",
+      "url": "https://elevenlabs.io/docs/agents-platform/customization/agent-testing",
+      "kind": "company",
+      "treatment": "evidence",
+      "notes": "Platform-native alternative: Simulation, Next Reply and Tool Call tests, 2-20 repeats for a pass rate, CLI and API, tests created from real conversations."
+    }
+  ],
+  "context": [
+    {
+      "category": "buyer",
+      "title": "Contact-center leaders running hybrid AI + human operations",
+      "description": "Customer service and support leaders at mid-to-large enterprises own voice-agent purchases. They are judged on cost to serve alongside customer experience. In Gartner's March 2025 poll of 163 such leaders, 95% planned to keep human agents, and Gartner forecasts that by 2027 half of the organizations that planned large AI-driven headcount cuts will drop those plans. This buyer wants AI that works inside a blended operation (handoffs, shared reporting), not agentless service. The 50% figure is a forecast, not a measured result.",
+      "sourceKey": "gartner-workforce-2025"
+    },
+    {
+      "category": "buyer",
+      "title": "Healthcare patient-access executives modernizing call centers",
+      "description": "Access leaders at provider groups and health systems buy voice agents to absorb scheduling, referral and refill calls. A 2025 Becker's/Relatient survey of senior executives reports that 47% rank call-center infrastructure among their top three patient-access priorities, 36% are adopting voice or agentic AI in call centers, and 60% name patient experience as the main investment driver. The survey is co-produced by a scheduling vendor and publishes no sample size, so the figures are directional. These buyers also bring HIPAA obligations and EHR/PM integration requirements to every evaluation.",
+      "sourceKey": "beckers-relatient-2025"
+    },
+    {
+      "category": "buyer",
+      "title": "Local service SMB owners buying coverage for unanswered calls",
+      "description": "Owner-operators in home services and similar trades buy AI answering mainly to stop losing jobs to missed calls. They judge it on booked jobs, not contact-center KPIs. Evidence on the size of the problem is thin and comes from vendors: a Service Direct study, as reported by phone vendor MightyCall, found local home-service firms estimated they answered 97% of calls but actually answered about 66%, with no sample size or dates published. Vendor reports define 'missed' differently, so the customer's own call logs should replace industry figures.",
+      "sourceKey": "servicedirect-mightycall"
+    },
+    {
+      "category": "buyer",
+      "title": "Developer and product teams embedding voice in their own product",
+      "description": "Engineering and product teams at software companies, including voice-AI startups, buy components rather than finished agents: STT, LLM, TTS, speech-to-speech models, telephony and orchestration. Open-source frameworks such as Pipecat (BSD-2-Clause) plug into dozens of providers, speech-to-speech models (OpenAI Realtime, Gemini Live, Nova Sonic) and telephony carriers (Twilio, Telnyx, Plivo, Vonage, Genesys). Because these teams can swap providers easily, they care most about per-component latency, cost and lock-in. They answer for product reliability and gross margin as well as call outcomes.",
+      "sourceKey": "pipecat-github"
+    },
+    {
+      "category": "buyer",
+      "title": "Outbound sales, reminder and collections teams accountable for consent",
+      "description": "Teams running outbound programs (lead follow-up, reminders, renewals, collections) are judged on contact and conversion rates but carry TCPA exposure. The FCC's February 2024 Declaratory Ruling (FCC 24-17) confirmed that AI-generated voices count as 'artificial' voices under the TCPA. Such calls therefore need the called party's prior express consent unless there is an emergency purpose or an exemption. In practice, compliance and legal stakeholders hold an effective veto over outbound voice-agent roadmaps.",
+      "sourceKey": "fcc-24-17"
+    },
+    {
+      "category": "workflow",
+      "title": "Inbound scheduling that must write to the system of record",
+      "description": "Booking calls are the anchor workflow in healthcare and services: identify the caller, capture the reason and constraints, find availability, book or reschedule, and confirm. The job is only done when the calendar or EHR/PM system holds a correct appointment. That makes integration depth and accurate capture of names, dates and callback numbers matter more than conversational polish. Becker's/Relatient respondents say online request forms (32%) and portal scheduling (33%) are common but add friction, which helps explain why phone stays a primary channel (vendor co-produced survey).",
+      "sourceKey": "beckers-relatient-2025"
+    },
+    {
+      "category": "workflow",
+      "title": "After-hours and overflow answering for small businesses",
+      "description": "For SMBs, the agent answers when staff cannot (after hours, on a job, at peak times), qualifies the request, books or takes a message, and alerts the owner by text or CRM. Much of the value depends on what happens when the agent cannot finish the job, such as a callback promise or emergency routing. The alternative is often voicemail, which many callers reportedly do not leave. The supporting numbers are vendor-reported and should be checked against the customer's own call logs.",
+      "sourceKey": "servicedirect-mightycall"
+    },
+    {
+      "category": "workflow",
+      "title": "Tier-1 support with a context-preserving handoff to humans",
+      "description": "In support deployments, the agent resolves routine requests and transfers the rest to a human queue. In Gartner's 2024 survey of almost 6,000 customers, the top concern about AI service was that it makes reaching a person harder (60%). Gartner advises that the AI say it will connect callers to an agent when it cannot solve the issue, and that the human pick up where the bot left off. On the phone, that means a warm transfer with a summary or transcript passed to the CCaaS or ticketing system, not a cold transfer that makes callers repeat themselves.",
+      "sourceKey": "gartner-ai-cs-survey-2024"
+    },
+    {
+      "category": "workflow",
+      "title": "Outbound reminders and follow-ups gated by consent and disclosure",
+      "description": "Outbound workflows (appointment reminders, lead follow-up, confirmations, collections) need consent management wired into the dialer and CRM. The FCC's 2024 NPRM (FCC 24-84) proposes to define 'AI-generated call' and to require AI disclosure both when consent is obtained and at the start of each AI-voiced outbound call. It also asks for comment on an AI-specific opt-out. The proposal explicitly does not cover technology that answers inbound calls. These are proposals, not adopted rules, and no final order could be confirmed as of November 2026.",
+      "sourceKey": "fcc-ai-nprm"
+    },
+    {
+      "category": "workflow",
+      "title": "Telephony bridge: carrier media streams or direct SIP into the model",
+      "description": "Phone calls reach the agent in one of two ways: a carrier media stream into the customer's own orchestration, or SIP straight into a model provider (OpenAI's realtime models accept SIP, for example). Twilio Media Streams carry audio as base64 mu-law at 8,000 Hz, which is narrowband and holds only frequencies up to about 4 kHz. My inference: components tuned on 16 kHz audio may do worse on phone calls than in browser demos, so evaluate on real telephony audio. Transfers, DTMF, recording and caller ID also live in this layer, so the telephony choice limits what escalation and compliance features are possible.",
+      "sourceKey": "twilio-media-streams"
+    },
+    {
+      "category": "workflow",
+      "title": "Taking card payments by phone pulls the voice stack into PCI scope",
+      "description": "Bill pay, deposits and order taking often involve callers reading out card numbers. PCI SSC guidance (Protecting Telephone-Based Payment Card Data, v3.0, 2018) warns that many merchants do not realize how VoIP changes their PCI DSS scope, and says call recordings should not keep card data the business does not need. My inference from that guidance: an agent that hears, transcribes, logs or records card numbers may bring STT vendors, transcripts and analytics stores into scope. Handing payment capture to DTMF masking or a dedicated secure payment flow avoids that.",
+      "sourceKey": "pci-telephone"
+    },
+    {
+      "category": "alternative",
+      "title": "Human agents, in-house or outsourced",
+      "description": "Human staff, whether in-house, BPO or answering services, remain the default and the quality benchmark. Gartner's 2025 poll found 95% of service leaders plan to keep human agents, and Gartner recommends a 'digital first, but not digital only' hybrid. A voice agent therefore competes on handling a defined slice of calls and handing off cleanly. Buyers will compare it to human resolution quality, not only to human cost.",
+      "sourceKey": "gartner-workforce-2025"
+    },
+    {
+      "category": "alternative",
+      "title": "Touch-tone and directed-dialog IVR",
+      "description": "Many buyers already run an IVR, which routes cheaply but frustrates callers. In a 2019 Clutch survey of 501 US callers, 88% preferred a live agent to a phone menu. The top frustrations were irrelevant options (69%) and not being able to fully describe the issue (67%), and 70% pressed zero to escape. The data is old and predates LLMs, but it sets the bar: a voice agent has to beat the IVR at letting callers describe the problem in their own words while keeping an obvious path to a human.",
+      "sourceKey": "clutch-ivr-2019"
+    },
+    {
+      "category": "alternative",
+      "title": "Voicemail and missed calls (doing nothing)",
+      "description": "For many SMBs the real alternative is not answering at all. The MightyCall article repeats a Forbes-referenced claim that about 80% of callers don't leave voicemail; the underlying study could not be traced, so it is unverified. For these buyers the comparison that matters is extra booked jobs versus today's missed calls, which needs the customer's own call data.",
+      "sourceKey": "servicedirect-mightycall"
+    },
+    {
+      "category": "alternative",
+      "title": "Self-service digital channels (online booking, portals, chat)",
+      "description": "Web forms, patient portals and chat deflection compete for the same intents as phone agents. In the Becker's/Relatient survey, online appointment request forms (32%) and portal scheduling (33%) were common, but respondents described them as adding friction. Voice agents win on callers who will not or cannot use digital channels. The decision is about channel mix, not replacement.",
+      "sourceKey": "beckers-relatient-2025"
+    },
+    {
+      "category": "alternative",
+      "title": "Build on frameworks or model APIs vs buy a managed voice-agent platform",
+      "description": "Managed platforms bundle telephony, orchestration and models into a per-minute price. Retell's public price list (Nov 2026) shows $0.055/min infrastructure, LLM at $0.008-$0.16/min depending on model, TTS at $0.015/min (ElevenLabs voices $0.04-$0.10), and US telephony at $0.015/min. It includes 20 concurrent calls and bills add-ons such as denoising and PII removal per minute, with silence and hold time billed too. Building on open-source frameworks (Pipecat, LiveKit Agents) or directly on realtime model APIs swaps that bundle for engineering effort and more control over latency, providers and data handling.",
+      "sourceKey": "retell-pricing"
+    },
+    {
+      "category": "purchasing_criterion",
+      "title": "Resolution, not containment, should decide renewals",
+      "description": "Containment counts calls that ended without a human. Resolution counts calls where the caller's problem was actually solved. Per Kaizo (a vendor glossary), a caller who gives up or hangs up counts as contained, and 'the fastest way to raise containment is to make escalation harder.' Buyers who are sold on containment can renew on a flattering number while callers abandon, so contracts and dashboards should report both.",
+      "sourceKey": "kaizo-containment"
+    },
+    {
+      "category": "purchasing_criterion",
+      "title": "Perceived latency, measured mouth-to-ear rather than platform-only",
+      "description": "Twilio separates the mouth-to-ear turn gap (from the caller stopping speaking until they hear the reply, including network and PSTN transit) from the platform turn gap, which excludes transit. Twilio notes that some vendors quote only platform processing time. Twilio's November 2025 starting benchmarks for a cascaded agent are a 1,115 ms median mouth-to-ear target with a 1,400 ms upper limit. Tool-call spikes are excluded from those numbers, so buyers should ask how latency was measured and at which percentile.",
+      "sourceKey": "twilio-latency-guide"
+    },
+    {
+      "category": "purchasing_criterion",
+      "title": "Robustness to callers' accents and noisy environments",
+      "description": "On τ-Voice's 278 tasks (Mar 2026), the same tasks reached about 85% completion as a text agent, but voice agents from OpenAI, Google and xAI reached 31-51% on clean audio and 26-38% with realistic noise and accents. Buyers serving diverse populations or callers on mobiles in cars, kitchens or job sites should require evaluation under their own acoustic conditions. A clean-audio demo overstates production performance.",
+      "sourceKey": "tau-voice"
+    },
+    {
+      "category": "purchasing_criterion",
+      "title": "Healthcare buyers require a BAA from every vendor touching PHI",
+      "description": "Under HHS OCR's 2016 cloud guidance, a covered entity may use a cloud provider for ePHI only after signing a business associate agreement that requires safeguards and incident reporting. A voice agent that hears, transcribes or stores patient information pulls its STT, LLM, TTS, telephony and logging vendors into that chain. BAA availability, often only on enterprise tiers, can rule out vendors before any performance evaluation.",
+      "sourceKey": "hipaa-cloud"
+    },
+    {
+      "category": "purchasing_criterion",
+      "title": "AI-disclosure duties are now live in the EU and some US states",
+      "description": "Per Cooley, the EU AI Act's Article 50 transparency obligations, including telling people they are interacting with an AI system, apply from 2 August 2026. The Digital Omnibus (Regulation 2026/1744) delayed high-risk obligations but not these. US rules are a patchwork: Utah's SB 226, for example, requires disclosure when a consumer asks, with a safe harbor for disclosing up front. One firm reported a different EU reading, so customers selling into the EU should confirm with counsel and treat disclosure as a product requirement.",
+      "sourceKey": "eu-ai-act-omnibus"
+    },
+    {
+      "category": "purchasing_criterion",
+      "title": "Graceful failover when a model provider errors mid-call",
+      "description": "LiveKit's docs note that 'a model API failure can leave the agent unable to continue.' They describe adapters that switch STT, LLM, TTS or realtime providers on error. Limits apply: TTS does not switch mid-utterance, and an LLM that has already streamed output raises the error unless configured otherwise. Buyers should ask how the stack behaves during a provider outage and whether context survives the switch, rather than relying only on headline uptime.",
+      "sourceKey": "livekit-fallback-docs"
+    },
+    {
+      "category": "failure_mode",
+      "title": "Premature end-of-turn cuts callers off mid-number",
+      "description": "Silence-based endpointing treats natural pauses, such as reading out a phone number or recalling a date, as the end of the caller's turn, so the agent talks over them. LiveKit's turn detector tries to fix this by inferring expected formats from the prompt so it waits for complete phone numbers or emails. LiveKit reports its v0.4.1 model cut the false end-of-turn rate from 18.66% to 11.34% at a fixed 99.3% true-positive rate (vendor-reported, Dec 2025). Fixes trade against response latency, so measure this per scenario, especially flows with digit strings and one-word answers.",
+      "sourceKey": "livekit-eot-v041"
+    },
+    {
+      "category": "failure_mode",
+      "title": "Agent stops talking at backchannels, coughs or background noise",
+      "description": "With simple VAD, any sound while the agent is speaking counts as an interruption: an 'mm-hmm', a sigh, typing, a TV. The agent stops mid-sentence and seems jittery. LiveKit reports its adaptive model rejected 51% of VAD-triggered barge-ins at 100% recall on an undescribed held-out set (vendor-reported, Mar 2026). LiveKit's docs also say it can mistake real interruptions for backchannels at the start or end of the agent's turn. The opposite failure, ignoring a real 'wait, no', is just as damaging.",
+      "sourceKey": "livekit-adaptive-interruption"
+    },
+    {
+      "category": "failure_mode",
+      "title": "Named entities misheard even when overall WER looks fine",
+      "description": "In a Feb 2026 study, 15 commercial ASR models from OpenAI, Deepgram, Google and Microsoft averaged a 44% error rate transcribing US street names. Downstream routing errors were twice as large for speakers whose primary language is not English. Names, addresses, numbers and emails are often exactly what a booking or lookup needs, so a low average word error rate can hide task-breaking errors. The authors report that fine-tuning on fewer than 1,000 synthetic TTS samples improved street-name accuracy by nearly 60% for those speakers.",
+      "sourceKey": "street-names-asr"
+    },
+    {
+      "category": "failure_mode",
+      "title": "Agent reasoning, policy and tool-use errors dominate realistic task failures",
+      "description": "In τ-Voice, the authors attribute 79-90% of voice-agent failures to agent behaviour rather than to the simulator. On identical tasks, voice agents kept only about 30-45% of a text agent's task completion. Many voice failures are therefore policy-following, state-tracking and tool-use errors that remain after audio fixes. Triage should separate audio-layer causes (ASR, turn-taking) from agent-layer ones.",
+      "sourceKey": "tau-voice"
+    },
+    {
+      "category": "failure_mode",
+      "title": "A confidently stated wrong policy creates liability",
+      "description": "In Moffatt v. Air Canada (2024 BCCRT 149), a website chatbot told a customer he could claim a bereavement fare retroactively, which contradicted the airline's own policy page. The tribunal rejected the argument that the chatbot was a separate entity and held the airline responsible for what it said. It is a chat case and not binding precedent, but it shows the risk of voice agents improvising refund, pricing or eligibility policy. Policy answers should be grounded in approved content or escalated.",
+      "sourceKey": "moffatt-air-canada"
+    },
+    {
+      "category": "failure_mode",
+      "title": "No path, or a lossy path, to a human",
+      "description": "The most common customer fear about AI service in Gartner's 2024 survey was that it makes reaching a person harder (60%), and over half said they would consider switching companies over AI service. Phone-specific versions of the failure: the agent ignores 'agent' or 'representative', loops on clarifying questions, transfers to a dead queue, or transfers without context so the caller starts over. Containment metrics can hide all of these.",
+      "sourceKey": "gartner-ai-cs-survey-2024"
+    },
+    {
+      "category": "alternative",
+      "title": "Dedicated voice eval platforms converge on a simulate, monitor, human-review loop",
+      "description": "Coval, Hamming, Cekura, Roark and Bluejay all offer simulated callers before launch, scoring of production calls, and human review that calibrates automated judges. Differences are emphasis (security for Hamming, auto-fixes for Cekura and Roark, production analytics for Roark) rather than category. Roadwise should integrate with this layer, not rebuild it.",
+      "sourceKey": "coval-docs"
+    },
+    {
+      "category": "alternative",
+      "title": "Agent platforms ship free native testing that is shallower and platform-locked",
+      "description": "Vapi, Retell and ElevenLabs each include simulation testing. Vapi supports voice mode with latency gates, while Retell's simulations are text-only and judged in one pass/fail LLM call. Teams on a single platform may never buy a dedicated eval tool, so Roadwise must work with native test results too.",
+      "sourceKey": "vapi-simulations-docs"
+    },
+    {
+      "category": "workflow",
+      "title": "Teams gate releases by running simulated regression sets from CI",
+      "description": "Coval documents a GitHub Action that launches a run on pull requests, a CLI built for CI and autonomous agents, and recommends separate regression (happy-path) and adversarial test sets. ElevenLabs and Retell expose similar CLI or API batch runs. A roadmap change can be verified by the same gate the team already uses.",
+      "sourceKey": "coval-docs"
+    },
+    {
+      "category": "workflow",
+      "title": "Production failures get converted into regression test cases",
+      "description": "Coval lets teams upload production calls with audio, transcripts and traces, score them, re-run updated metrics on history, and turn a failure into a test case. This closes the loop between monitoring and pre-release testing, and gives Roadwise a ready source of product-specific evidence.",
+      "sourceKey": "coval-docs"
+    },
+    {
+      "category": "buyer",
+      "title": "Eval buyers are developers/QA, multi-vendor agent ops, and regulated industries",
+      "description": "Coval's docs target developers and QA automating scenarios, enterprise agent ops standardizing metrics across vendors, and teams wanting CI gates. Its marketing adds healthcare, financial services and insurance. Compliance (HIPAA, SOC 2) is table stakes on every plan.",
+      "sourceKey": "coval-docs"
+    },
+    {
+      "category": "purchasing_criterion",
+      "title": "Eval cost scales with simulation minutes, which are much pricier than upload minutes",
+      "description": "Coval's Starter plan includes 100 simulation minutes but 3,000 upload minutes, with $0.40 per simulation-minute overage. Evaluating a roadmap hypothesis on existing production calls is far cheaper than large simulated runs, which affects how Roadwise sequences evidence gathering.",
+      "sourceKey": "coval-pricing"
+    },
+    {
+      "category": "failure_mode",
+      "title": "LLM-judge metrics can disagree with human judgment unless calibrated",
+      "description": "Coval builds human review projects, reviewer-agreement insights and judge-calibration guides around the premise that automated judges drift from human labels. A recommendation validated only by an uncalibrated judge should be treated as weak evidence.",
+      "sourceKey": "coval-docs"
+    },
+    {
+      "category": "failure_mode",
+      "title": "Metric names can mislead: 'interruption rate' may measure the agent talking over the user, not barge-in handling",
+      "description": "Coval's Interruption Rate counts only agent-over-user interruptions per minute, and Latency is the average silence after the user's turn. Testing whether an agent handles caller barge-in correctly needs persona interruption settings plus a judge or trace metric. Picking the wrong metric can falsely confirm or reject a hypothesis.",
+      "sourceKey": "coval-docs"
+    }
+  ],
+  "evaluation": [
+    {
+      "name": "Task completion",
+      "description": "Callers phone to get something done: book, reschedule, pay, get a correct answer. The customer's business value, whether booked revenue, avoided labour or patient access, only exists when that job is completed correctly in the system of record. It is the top priority because every other improvement (speed, naturalness, cost) is worth something only if completion holds.",
+      "measure": "Task success rate per scenario, judged on the end state in the system of record (for example, an appointment exists with the correct patient, date, time and callback number), not on what the agent says it did. Track pass@1, plus consistency across repeated runs of the same scenario. τ-Voice reports pass@1, and the τ-bench line of work uses repeated-trial consistency. Report resolution rate (issue solved) separately from containment rate (no human involved). Add field-level accuracy for captured entities (names, addresses, numbers), because ASR errors on entities can break tasks even when WER looks fine. For reference: τ-Voice (Mar 2026) reports voice agents at 26-51% task completion versus about 85% for a text agent on the same 278 research tasks. That is a research benchmark, not a production target.",
+      "guardrail": "Completion must not be bought by skipping identity verification, policy checks or confirmation read-backs. It must not come from suppressing escalation, because rising containment with flat resolution is a warning sign. A call where the agent says it is done but the system of record disagrees counts as a failure, not a success."
+    },
+    {
+      "name": "Latency",
+      "description": "Long gaps after the caller stops speaking feel broken on the phone. Callers repeat themselves, talk over the agent or hang up, and slow turns compound across a multi-turn booking. Latency is ranked below completion because a fast agent that books the wrong slot is worse than a slightly slower correct one.",
+      "measure": "Mouth-to-ear turn gap: the time from the caller's end of speech until they hear the reply, including network and PSTN transit. Report it at p50 and p95, not just the mean, and measure it separately from platform-only turn gap (Twilio's definitions). Break it down by component: STT finalization or end-of-turn detection, LLM time-to-first-token, TTS time-to-first-byte, and telephony transit. Track turns with tool calls separately. Reference points, all vendor-attributed: Twilio's Nov 2025 starting benchmarks for a cascaded agent give a 1,115 ms median target and 1,400 ms upper limit mouth-to-ear (885/1,100 ms platform), with components at STT 350 ms, LLM TTFT 375 ms and TTS TTFB 100 ms. Deepgram reports Flux end-of-turn at about 1 s p90 and about 1.5 s p95. Twilio warns that smart endpointing can cause jumps in tail latency near the silence timeout.",
+      "guardrail": "Faster responses must not raise the false end-of-turn (cut-off) rate, lower entity capture accuracy, or reduce task completion. Cost is a side effect to watch: Deepgram says eager end-of-turn fires 150-250 ms earlier at the cost of 50-70% more LLM calls. A smaller or faster model must clear the same completion bar on held-out scenarios."
+    },
+    {
+      "name": "Interruptions",
+      "description": "Turn-taking failures run both ways. The agent cuts callers off mid-utterance (premature end-of-turn), or it handles caller barge-in badly, either by ignoring a real correction or by stopping at every 'mm-hmm' or background noise. Both damage trust and cause wrong captures, especially in phone numbers, addresses and yes/no confirmations.",
+      "measure": "(1) False end-of-turn rate: the share of caller turns where the agent starts speaking before the caller has finished. LiveKit reports this as false-positive rate at a fixed true-positive rate, for example 99.3%. Measure it at your latency budget and segment by utterance type (digit strings, one-word answers, hesitations). (2) True barge-in handling: the share of genuine caller interruptions where the agent stops and addresses them, plus time-to-stop. (3) False barge-in rate: the share of backchannels, coughs or noise that wrongly stop the agent. LiveKit reports precision and recall at 500 ms of overlapping speech. Full-Duplex-Bench provides automatic metrics for pause handling, backchanneling, turn-taking and interruption management that can be adapted. All vendor figures in this area (LiveKit, Deepgram, Daily) are self-reported on undisclosed or vendor-built datasets, so re-measure on the customer's calls.",
+      "guardrail": "Reducing false interruptions must not make the agent ignore real corrections ('wait, no, the 15th'). LiveKit's docs note its adaptive model can misclassify real interruptions at turn boundaries. Waiting longer to avoid cut-offs must stay within the latency budget, and any change must hold or improve task completion and entity accuracy."
+    },
+    {
+      "name": "Escalation",
+      "description": "Some calls must reach a human: explicit requests, safety or clinical issues, complex or emotional cases, repeated agent failure. Gartner's 2024 survey found that the fear of not being able to reach a person is customers' top concern about AI service. Escalation done well protects callers and the customer's reputation. Done badly, through missing, late or context-losing handoffs, it shows up as abandoned calls that containment metrics count as successes.",
+      "measure": "Escalation appropriateness: precision and recall of handoffs against labelled scenarios where the customer's policy says the call should (or should not) escalate. Also measure: honouring explicit human requests within a defined number of turns; handoff success rate (the transfer connects rather than dropping or reaching a closed queue); context transfer completeness (summary, caller identity, captured fields passed on, so the human picks up where the bot left off, per Gartner's guidance); and time to human. Recovery-oriented metrics such as recovery turn count need human review. An Aug 2026 study found Recovery Turn Count and safety-recall metrics unreliable for fully automated LLM-judge scoring.",
+      "guardrail": "Escalation must never be made harder to improve containment or cost. Kaizo notes the fastest way to raise containment is to make escalation harder. Lowering unnecessary escalations is only a win if escalation recall on must-escalate scenarios stays at the agreed level and resolution does not fall."
+    },
+    {
+      "name": "Reliability",
+      "description": "A voice agent is production phone infrastructure. Dropped calls, dead air, provider outages and inconsistent behaviour from one call to the next hit callers directly and erode the buyer's trust faster than average-quality metrics move. Reliability includes run-to-run consistency on the same scenario, not just uptime.",
+      "measure": "Call setup failure rate, mid-call drop rate, and dead-air incidents (silence longer than a threshold the customer defines; no sourced industry threshold was found). Provider error and timeout rates per component (STT, LLM, TTS, telephony). Fallback activation rate and post-fallback call success. Tool/API call error rate. Variance of task success across repeated runs of identical scenarios. LiveKit's docs show stacks can emit error and availability-changed events on fallback, which can feed these metrics.",
+      "guardrail": "Failover must keep conversation context and must not repeat side-effecting actions, such as double-booking or double-charging after a retry (AI research recommendation, not a sourced standard). LiveKit's docs show limits to watch: TTS does not switch mid-utterance, and an LLM that has already streamed output raises the error rather than restarting unless configured otherwise. Reliability work must not add latency on the happy path beyond the latency budget."
+    },
+    {
+      "name": "Cost",
+      "description": "Cost decides margin for platform builders and ROI for buyers, but it is ranked last because cheap calls that fail or escalate cost more in total. The right unit is cost per successfully resolved call, including the human cost of escalations, not cost per minute alone.",
+      "measure": "Cost per minute and per call, broken down by component (infrastructure/orchestration, LLM, STT/TTS or realtime audio tokens, telephony, add-ons). Then cost per resolved call: total cost divided by resolved calls, plus human handling cost for escalated calls. Reference prices, as fetched Nov 2026 and subject to change: OpenAI gpt-realtime-2.1 is $32/$64 per 1M audio input/output tokens and gpt-realtime-2.1-mini $10/$20. Retell's list prices are $0.055/min infrastructure plus LLM ($0.008-$0.16/min), TTS ($0.015/min, ElevenLabs $0.04-$0.10) and telephony ($0.015/min), with silence and hold time billed. Outcome-based pricing (Sierra: charge per resolved conversation, generally nothing for unresolved or escalated ones) makes the resolution definition a billing term.",
+      "guardrail": "A cheaper model, voice or provider must not lower task completion or entity accuracy, raise escalations, or worsen p95 latency enough to make cost per resolved call go up. Cost cuts must not remove compliance controls such as PII redaction, disclosure, or consent checks."
+    }
+  ],
+  "questions": [
+    {
+      "question": "On this customer's own scenarios, does a speech-to-speech (realtime) agent match the task completion of their cascaded STT->LLM->TTS pipeline, and where does each one fail?",
+      "rationale": "This is the architecture migration decision. τ-Voice (Mar 2026) found realtime voice agents from OpenAI, Google and xAI kept only about 30-45% of a text agent's task completion on identical tasks. OpenAI's own guide positions chained pipelines for cases where each stage must be visible or replaceable, for example for policy checks or transcripts. A migration justified by naturalness or latency should be tested against completion, policy adherence and audit needs on held-out customer scenarios first.",
+      "sourceKey": "tau-voice"
+    },
+    {
+      "question": "Are premature end-of-turn decisions a material cause of failed or degraded calls for this customer, and would a model-based turn detector (e.g., Deepgram Flux, LiveKit's turn detector, Pipecat Smart Turn) reduce them without raising latency or cost?",
+      "rationale": "Decides whether to spend roadmap effort on turn detection. Since Oct 2025 several vendors have shipped semantic or acoustic end-of-turn models with self-reported gains. Deepgram's eager end-of-turn fires 150-250 ms earlier but costs 50-70% more LLM calls. Following the one-pager's principle, first check call recordings for cut-offs before recommending adoption.",
+      "sourceKey": "deepgram-flux"
+    },
+    {
+      "question": "How often does this customer's agent stop mid-sentence because of backchannels, coughs or background noise, and would adaptive interruption handling fix that without missing real corrections?",
+      "rationale": "Decides whether to prioritize interruption handling, the one-pager's own example. LiveKit (Mar 2026) reports its model rejects 51% of VAD-triggered barge-ins at 100% recall on a held-out set it does not describe. Its docs warn of misclassification at turn boundaries. The answer depends on how often false barge-ins actually occur in the customer's calls.",
+      "sourceKey": "livekit-adaptive-interruption"
+    },
+    {
+      "question": "Are open full-duplex models (e.g., NVIDIA PersonaPlex, Jan 2026, built on Kyutai Moshi) ready for task-heavy business calls that need tool calls, policy adherence and transfers, or are they so far mainly better at natural turn-taking?",
+      "rationale": "Decides between planning a migration, running a limited pilot, or watching. PersonaPlex releases open weights and reports strong role adherence on a customer-service extension of Full-Duplex-Bench. Its published evaluation focuses on turn-taking and role adherence rather than end-to-end task completion with tools and integrations.",
+      "sourceKey": "personaplex"
+    },
+    {
+      "question": "Which public voice-agent benchmarks (τ-Voice, DuplexWorld, Full-Duplex-Bench) predict this customer's production outcomes, and which held-out scenarios must be built in-house?",
+      "rationale": "Shapes evaluation investment and vendor screening. DuplexWorld (Aug 2026) reports a best Pass@1 of 0.490 across banking, insurance, travel, healthcare and logistics scenarios. Public benchmarks help compare models but may not reflect the customer's integrations, caller population or policies.",
+      "sourceKey": "duplexworld"
+    },
+    {
+      "question": "If the customer runs or plans AI-voiced outbound calls, should it build AI disclosure at consent capture and at call start now, before the FCC acts on its 2024 AI-call NPRM?",
+      "rationale": "Affects outbound roadmap and compliance design. FCC 24-84 proposes both disclosures and an AI-specific opt-out, and excludes inbound answering technology. Building disclosure and consent records now may be cheaper than retrofitting, but the rule's final form and timing are unconfirmed as of Nov 2026.",
+      "sourceKey": "fcc-ai-nprm"
+    },
+    {
+      "question": "Can the customer's outbound stack apply a consent revocation across all of that caller's robocall and robotext programs by the FCC's revoke-all effective date, currently Jan 31, 2027?",
+      "rationale": "Affects consent data models and dialer/CRM integration work. The FCC delayed 47 CFR 64.1200(a)(10) twice, most recently on Jan 6, 2026, and said it may modify the rule. Teams need to know whether to build cross-program revocation now or wait, and must re-check the date.",
+      "sourceKey": "fcc-revoke-all-delay"
+    },
+    {
+      "question": "For callers in the EU and in US states with AI-disclosure laws, does the agent disclose at the outset that it is an AI and answer truthfully when asked, and does any market expansion depend on this?",
+      "rationale": "Determines whether disclosure is a launch blocker for some markets. Per Cooley, EU AI Act Article 50 transparency duties apply from 2 Aug 2026 and were not delayed by the Digital Omnibus. Utah's SB 226 requires disclosure on request and offers a safe harbor for disclosing up front. Disclosure wording also affects caller experience and possibly completion rates, which can be tested.",
+      "sourceKey": "eu-ai-act-omnibus"
+    },
+    {
+      "question": "Would a smaller realtime model (e.g., gpt-realtime-2.1-mini at $10/$20 per 1M audio input/output tokens vs $32/$64 for the full model) or a cascaded stack lower cost per resolved call without lowering completion or raising escalations?",
+      "rationale": "Affects cost and margin roadmap. Audio-token prices differ about 3x between tiers, but the decision should be made on cost per resolved call measured on held-out scenarios, since a cheaper model that fails or escalates more can raise total cost.",
+      "sourceKey": "openai-pricing"
+    },
+    {
+      "question": "Should the customer price its voice product per resolution or outcome instead of per minute, and can it measure resolution reliably enough to bill on it?",
+      "rationale": "Affects packaging, pricing and analytics work. Sierra (Dec 2024) charges for outcomes such as resolved conversations and generally not for unresolved or escalated ones. That moves risk onto the vendor and makes the resolution definition a contract term, which needs auditable measurement that goes beyond containment.",
+      "sourceKey": "sierra-outcome-pricing"
+    },
+    {
+      "question": "Does the customer already use a dedicated eval platform or their agent platform's native tests, and can Roadwise read and launch runs through an API, CLI or MCP?",
+      "rationale": "Determines whether Roadwise orchestrates existing evals for the 'how to test it' step or needs a minimal harness, and which evidence is available on day one."
+    },
+    {
+      "question": "For a given industry signal (e.g. a new turn-taking or interruption model), which existing metrics in the customer's eval stack actually measure the hypothesized effect, and are they calibrated against human labels?",
+      "rationale": "Decides whether a recommendation can be tested with current instrumentation or first requires a new metric or human review, and how much weight the eval result deserves."
+    },
+    {
+      "question": "How well do simulated-caller results predict production outcomes for the customer's key journeys (the gap between simulation and real calls)?",
+      "rationale": "Affects whether Roadwise accepts a simulated win as sufficient to recommend a roadmap change, or requires a production follow-up check before calling the hypothesis supported."
+    },
+    {
+      "question": "Are eval vendors' own agents (e.g. Coval Sofia investigations, Cekura and Roark auto-fix loops) moving toward roadmap-level recommendations?",
+      "rationale": "Shapes Roadwise's positioning: complement eval platforms by focusing on external signals, the decision log and outcome follow-up, versus overlapping with their in-product investigation agents."
+    },
+    {
+      "question": "Does the customer's stack depend on whisper-1, gpt-4o-transcribe, gpt-4o-mini-transcribe or gpt-4o-transcribe-diarize, which OpenAI shuts down on 2027-02-26, and which replacement holds up on their calls?",
+      "rationale": "A forced migration before Feb 26, 2027: choosing the replacement (OpenAI's suggested gpt-live-transcribe / gpt-transcribe or another STT) should be tested on the customer's entity accuracy and latency, not assumed equivalent.",
+      "sourceKey": "openai-api-changelog"
+    }
+  ]
+}

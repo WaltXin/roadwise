@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { deleteEntry } from "@/lib/knowledge/actions";
 import {
   fieldLabel,
-  optionLabel,
+  findOption,
   SECTIONS,
   type EntryValues,
   type SectionKey,
@@ -17,6 +17,17 @@ import {
 
 import { EntryForm } from "./entry-form";
 import { SubmitButton } from "./submit-button";
+
+const dateFormat = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+function formatDate(iso: string) {
+  return dateFormat.format(new Date(iso));
+}
 
 type Props = {
   sectionKey: SectionKey;
@@ -47,12 +58,17 @@ export function EntryCard({ sectionKey, domainId, entry, sourceOptions }: Props)
   const title = String(entry[section.titleField] ?? "");
   const badges = section.badgeFields
     .filter((name) => entry[name] && name !== section.groupBy)
-    .map((name) => ({ name, label: optionLabel(section, name, String(entry[name])) }));
+    .map((name) => {
+      const value = String(entry[name]);
+      const option = findOption(section, name, value);
+      return { name, label: option?.label ?? value, tone: option?.badge };
+    })
+    .filter((b) => b.tone !== "hidden");
 
   const urlField = section.fields.find((f) => f.kind === "url");
   const url = urlField ? (entry[urlField.name] as string | null) : null;
   const sourceField = section.fields.find((f) => f.kind === "source");
-  const sourceName = sourceField ? sourceOptions.find((o) => o.value === entry[sourceField.name])?.label : undefined;
+  const source = sourceField ? sourceOptions.find((o) => o.value === entry[sourceField.name]) : undefined;
   const rankField = section.fields.find((f) => f.kind === "number");
   const rank = rankField ? entry[rankField.name] : null;
 
@@ -70,10 +86,8 @@ export function EntryCard({ sectionKey, domainId, entry, sourceOptions }: Props)
             {badges.map((b) => (
               <Badge
                 key={b.name}
-                variant={entry[b.name] === "lead" ? "outline" : "secondary"}
-                className={
-                  entry[b.name] === "lead" ? "border-amber-500/40 text-amber-700 dark:text-amber-400" : undefined
-                }
+                variant={b.tone === "caution" ? "outline" : "secondary"}
+                className={b.tone === "caution" ? "border-amber-500/40 text-amber-700 dark:text-amber-400" : undefined}
               >
                 {b.label}
               </Badge>
@@ -104,11 +118,24 @@ export function EntryCard({ sectionKey, domainId, entry, sourceOptions }: Props)
             );
           })}
 
-          {sourceName && (
-            <p className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
-              <LinkIcon className="size-3" /> {sourceName}
-            </p>
-          )}
+          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            {source &&
+              (source.href ? (
+                <a
+                  href={source.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-w-0 items-center gap-1 underline-offset-2 hover:text-foreground hover:underline"
+                >
+                  <LinkIcon className="size-3 shrink-0" /> <span className="truncate">{source.label}</span>
+                </a>
+              ) : (
+                <span className="inline-flex items-center gap-1">
+                  <LinkIcon className="size-3" /> {source.label}
+                </span>
+              ))}
+            {typeof entry.createdAt === "string" && <span>Added {formatDate(entry.createdAt)}</span>}
+          </p>
         </div>
 
         <div className="flex shrink-0 items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover/entry:opacity-100 sm:group-focus-within/entry:opacity-100">
