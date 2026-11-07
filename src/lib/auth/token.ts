@@ -29,7 +29,9 @@ export async function hasExpertAccess(cookieValue: string | undefined) {
   return safeEqual(cookieValue, await expertToken(process.env.EXPERT_PASSCODE!));
 }
 
-/** Only allow redirects back into the console. */
+/** Only allow redirects back into the signed-in app. */
 export function safeNextPath(next: unknown) {
-  return typeof next === "string" && /^\/expert(\/|$)/.test(next) && !next.startsWith("//") ? next : "/expert";
+  return typeof next === "string" && /^\/(expert|products)(\/|$|\?)/.test(next) && !next.startsWith("//")
+    ? next
+    : "/expert";
 }

@@ -15,6 +15,9 @@ See [`docs/one-pager.md`](docs/one-pager.md) for the full product brief.
 | `/expert/[domain]/context` | Buyers, workflows, alternatives, purchasing criteria, failure modes |
 | `/expert/[domain]/evaluation` | Ranked evaluation priorities, how each is measured, and guardrails |
 | `/expert/[domain]/questions` | Research questions that could change a customer's roadmap |
+| `/products` | Product onboarding: list and create products |
+| `/products/new` | Share a product (description, roadmap, code, evidence); "Fill with demo" loads LiveKit's front-desk agent |
+| `/products/[id]` | Onboarding workspace: chat with Roadwise, live profile, roadmap hypotheses, decision candidates |
 
 The four knowledge sections are defined once in [`src/lib/knowledge/sections.ts`](src/lib/knowledge/sections.ts). That config drives the forms, the list views and server-side validation. To add a field: add a column to [`src/db/schema.ts`](src/db/schema.ts), add the field to the section config, then run `npm run db:push`.
 
@@ -23,6 +26,7 @@ The four knowledge sections are defined once in [`src/lib/knowledge/sections.ts`
 - [Next.js](https://nextjs.org) 16 (App Router, Cache Components, Turbopack) + React 19
 - TypeScript, Tailwind CSS v4, [shadcn/ui](https://ui.shadcn.com) (Base UI)
 - Postgres on [Neon](https://neon.tech) via the Vercel Marketplace, [Drizzle ORM](https://orm.drizzle.team)
+- Claude (Anthropic TypeScript SDK) for the onboarding agent
 - Deployed on Vercel (pushes to `main` deploy to production)
 
 ## Getting started
@@ -41,7 +45,8 @@ Open [http://localhost:3000](http://localhost:3000).
 | Variable | Purpose |
 | --- | --- |
 | `DATABASE_URL` | Neon Postgres connection string. Added by the Neon integration. |
-| `EXPERT_PASSCODE` | Shared passcode for the expert console. If unset, the console is open in local dev and locked in production. |
+| `EXPERT_PASSCODE` | Shared passcode for the signed-in app (expert console and product workspaces). If unset, it's open in local dev and locked in production. |
+| `ANTHROPIC_API_KEY` | Claude API key for the onboarding agent. |
 
 ## Scripts
 

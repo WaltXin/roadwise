@@ -23,7 +23,7 @@ Not universal expertise, and no business impact that hasn't been measured. When 
 MVP roadmap (from the one-pager):
 
 1. Initialize the Voice AI domain with curated sources and a clear industry framework. ← **framework built; AI-researched knowledge imported (2026-11-07) and awaiting expert review**
-2. Onboard one existing product and identify one consequential roadmap decision.
+2. Onboard one existing product and identify one consequential roadmap decision. ← **built: `/products` onboarding (demo product: LiveKit's front-desk booking agent)**
 3. Generate an evidence-backed recommendation combining industry intelligence with product-specific findings.
 4. Evaluate independently using predefined acceptance criteria and held-out scenarios.
 5. Update the roadmap and preserve the recommendation, decision, evidence, and follow-up result.
@@ -46,7 +46,8 @@ MVP roadmap (from the one-pager):
 - `/expert` — expert console, gated by a shared passcode (`EXPERT_PASSCODE`). A domain expert curates four sections per domain: **sources**, **industry context** (buyers, workflows, alternatives, purchasing criteria, failure modes), **evaluation priorities** (ranked, with measure + guardrail), **research questions**.
 - Voice AI knowledge base: ~83 sources, 36 context entries, 6 evaluation priorities with measures and guardrails, 16 research questions — researched 2026-11-07, stored in `data/voice-ai/knowledge.json`, imported with `npm run db:import`, all marked for expert review.
 - Research notes: [`docs/research/coval.md`](docs/research/coval.md) — how Coval (voice agent simulation/eval platform) works, comparable tools, and implications: Roadwise should orchestrate eval platforms for the "how to test it" step, not rebuild them.
-- Not built yet: product onboarding, continuous signal ingestion, recommendations/decision records, evaluation runs, follow-up.
+- `/products` — product onboarding. A founder shares a description, roadmap, code and evidence; Roadwise (Claude) reads it, fills a live profile, interviews for what's missing, rewrites the roadmap as hypotheses with evidence status, and proposes 2–3 candidate decisions recorded as the full chain. The founder corrects the profile, keeps/drops items, and chooses one decision. "Fill with demo" loads LiveKit's open-source `frontdesk` booking agent (real code + scenarios; illustrative roadmap/notes).
+- Not built yet: code-change detection (GitHub), running evaluations, follow-up verdicts, continuous signal ingestion.
 
 ## Architecture
 
@@ -54,7 +55,9 @@ MVP roadmap (from the one-pager):
 - **Neon Postgres** (Vercel Marketplace) + **Drizzle ORM**. Schema in `src/db/schema.ts`; `getDb()` in `src/db/index.ts` is lazy so builds work without `DATABASE_URL`.
 - **Section config is the single source of truth** for the knowledge base: `src/lib/knowledge/sections.ts` drives forms, list views, and server-side validation (`parseEntry` in `server.ts` builds Zod schemas from it). Enum values live in `enums.ts` and feed both `pgEnum`s and the UI.
 - Reads: `src/lib/knowledge/queries.ts` (server-only). Writes: Server Actions in `src/lib/knowledge/actions.ts`.
-- Auth: `src/proxy.ts` (Next 16's renamed middleware) redirects signed-out console visits to `/expert/login`; every mutating Server Action must call `requireExpert()` first.
+- Auth: `src/proxy.ts` (Next 16's renamed middleware) redirects signed-out visits to `/expert/*` and `/products/*` to `/expert/login`; every mutating Server Action must call `requireExpert()` first.
+- **Onboarding agent** (`src/lib/onboarding/agent.ts`): Anthropic TypeScript SDK, `claude-opus-5-5`, adaptive thinking, effort `medium`, streaming + `finalMessage()`, server-side refusal fallback (`fallbacks: "default"`). A manual tool loop with three tools — `update_profile`, `save_roadmap_item`, `propose_decision` — that write structured state to Postgres; tool inputs are validated with Zod. The domain knowledge base is rendered into the system prompt with short citable refs (`[C12]`, `[E2]`) by `knowledge-context.ts` (cached with `use cache`, tag expired by expert edits).
+- **Conversation storage is append-only** (`onboarding_messages`, `json` column): turns are stored exactly as sent/received (incl. thinking and tool blocks) and replayed unchanged — never edit or delete earlier turns (breaks preserved thinking and the prompt cache). Panel edits are appended as `note` messages so the model sees them next turn.
 
 ## Conventions
 
@@ -83,5 +86,6 @@ npm run db:studio      # browse the database
 ## Deployment and workflow
 
 - Vercel project `waltxins-projects/roadwise`; production is https://roadwise-flax.vercel.app. **Pushing to `main` deploys to production.**
-- Env vars live in Vercel (`DATABASE_URL`, `EXPERT_PASSCODE`, …); never commit `.env*` or secrets.
+- Env vars live in Vercel (`DATABASE_URL`, `EXPERT_PASSCODE`, `ANTHROPIC_API_KEY`, …); never commit `.env*` or secrets.
+- Onboarding turns take ~30–70 s (several model calls with tools); `/products/[id]` sets `maxDuration = 300` for its Server Actions, and the chat polls `router.refresh()` while a turn runs so the panels fill in live.
 - The owner directs git steps explicitly: commit, merge to `main`, and push only when asked. Do work on a branch and fast-forward `main`.

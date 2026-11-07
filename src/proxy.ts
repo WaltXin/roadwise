@@ -2,7 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { EXPERT_COOKIE, hasExpertAccess } from "@/lib/auth/token";
 
-// Optimistic gate for console pages. Server Actions re-check with requireExpert().
+// Optimistic gate for the signed-in app (expert console, product workspaces).
+// Server Actions re-check with requireExpert().
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   if (pathname === "/expert/login") return NextResponse.next();
@@ -17,5 +18,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/expert", "/expert/:path*"],
+  matcher: ["/expert", "/expert/:path*", "/products", "/products/:path*"],
 };

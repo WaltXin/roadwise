@@ -1,4 +1,4 @@
-import { integer, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { integer, json, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 import {
   CONTEXT_CATEGORY_VALUES,
@@ -91,3 +91,117 @@ export const researchQuestions = pgTable("research_questions", {
 });
 
 export type Domain = typeof domains.$inferSelect;
+
+// ---------------------------------------------------------------------------
+// Product onboarding: a customer's product, what Roadwise has learned about it,
+// its roadmap as hypotheses, and candidate decisions. Domain-agnostic.
+// ---------------------------------------------------------------------------
+
+export const productInputKind = pgEnum("product_input_kind", ["roadmap", "code", "evidence", "other"]);
+export const evidenceStatus = pgEnum("evidence_status", ["supported", "contradicted", "unknown"]);
+export const roadmapOrigin = pgEnum("roadmap_origin", ["founder", "roadwise"]);
+export const roadmapStatus = pgEnum("roadmap_status", ["proposed", "kept", "dropped"]);
+export const decisionStatus = pgEnum("decision_status", ["candidate", "selected", "dismissed"]);
+export const level = pgEnum("level", ["high", "medium", "low"]);
+
+/** One value Roadwise has learned about a product, and how it knows it. */
+export type ProfileValue = {
+  value: string;
+  /** stated = founder said it; inferred = Roadwise's reading; confirmed = founder edited it in the panel. */
+  basis: "stated" | "inferred" | "confirmed";
+  updatedAt: string;
+};
+
+/** A link from a roadmap item or decision to a knowledge entry. */
+export type KnowledgeRef = {
+  section: "sources" | "context" | "evaluation" | "questions";
+  id: string;
+  label: string;
+  url?: string | null;
+};
+
+export const products = pgTable("products", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  domainId: uuid("domain_id")
+    .notNull()
+    .references(() => domains.id, { onDelete: "restrict" }),
+  name: text("name").notNull(),
+  summary: text("summary").notNull().default(""),
+  repoUrl: text("repo_url"),
+  profile: jsonb("profile").$type<Record<string, ProfileValue>>().notNull().default({}),
+  ...timestamps,
+});
+
+const productId = () =>
+  uuid("product_id")
+    .notNull()
+    .references(() => products.id, { onDelete: "cascade" });
+
+/** Material the founder shared at the start: roadmap, code/config, evidence. */
+export const productInputs = pgTable("product_inputs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productId: productId(),
+  kind: productInputKind("kind").notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  ...timestamps,
+});
+
+/** A roadmap item rewritten as a testable hypothesis, with its evidence status. */
+export const roadmapItems = pgTable("roadmap_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productId: productId(),
+  title: text("title").notNull(),
+  hypothesis: text("hypothesis").notNull(),
+  origin: roadmapOrigin("origin").notNull(),
+  evidenceStatus: evidenceStatus("evidence_status").notNull().default("unknown"),
+  evidence: text("evidence"),
+  priorities: jsonb("priorities").$type<string[]>().notNull().default([]),
+  refs: jsonb("refs").$type<KnowledgeRef[]>().notNull().default([]),
+  status: roadmapStatus("status").notNull().default("proposed"),
+  ...timestamps,
+});
+
+/** A consequential decision, recorded as the full chain the one-pager requires. */
+export const decisions = pgTable("decisions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productId: productId(),
+  roadmapItemId: uuid("roadmap_item_id").references(() => roadmapItems.id, { onDelete: "set null" }),
+  title: text("title").notNull(),
+  observed: text("observed").notNull(),
+  whyItMatters: text("why_it_matters").notNull(),
+  recommendation: text("recommendation").notNull(),
+  howToTest: text("how_to_test").notNull(),
+  acceptanceCriteria: text("acceptance_criteria").notNull(),
+  wouldChangeConclusion: text("would_change_conclusion").notNull(),
+  impact: level("impact").notNull(),
+  uncertainty: level("uncertainty").notNull(),
+  costToTest: level("cost_to_test").notNull(),
+  refs: jsonb("refs").$type<KnowledgeRef[]>().notNull().default([]),
+  status: decisionStatus("status").notNull().default("candidate"),
+  ...timestamps,
+});
+
+/**
+ * The onboarding conversation, stored as the exact Messages API turns (append-only),
+ * so it can be replayed to the model unchanged — including thinking and tool blocks.
+ */
+export const onboardingMessages = pgTable(
+  "onboarding_messages",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    productId: productId(),
+    seq: integer("seq").notNull(),
+    role: text("role", { enum: ["user", "assistant"] }).notNull(),
+    /** kickoff = shared material; chat = founder message; note = panel edit; tool_result = tool outputs; reply = Roadwise turn. */
+    kind: text("kind", { enum: ["kickoff", "chat", "note", "tool_result", "reply"] }).notNull(),
+    // json (not jsonb) keeps the stored turn byte-identical, so replays stay cache-friendly.
+    content: json("content").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("onboarding_messages_product_seq").on(t.productId, t.seq)],
+);
+
+export type Product = typeof products.$inferSelect;
+export type RoadmapItem = typeof roadmapItems.$inferSelect;
+export type Decision = typeof decisions.$inferSelect;

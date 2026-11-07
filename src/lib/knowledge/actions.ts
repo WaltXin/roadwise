@@ -1,13 +1,14 @@
 "use server";
 
 import { and, eq } from "drizzle-orm";
-import { refresh } from "next/cache";
+import { refresh, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { getDb } from "@/db";
 import { domains, sources } from "@/db/schema";
 import { requireExpert } from "@/lib/auth/server";
+import { knowledgeTag } from "@/lib/onboarding/knowledge-context";
 
 import { isSectionKey, SECTIONS } from "./sections";
 import { parseEntry, tableFor } from "./server";
@@ -82,6 +83,7 @@ export async function saveEntry(_prev: FormState, formData: FormData): Promise<F
     await db.insert(table).values({ ...(data as object), domainId } as never);
   }
 
+  updateTag(knowledgeTag(domainId));
   refresh();
   return { status: "success", submittedAt: Date.now() };
 }
@@ -98,6 +100,7 @@ export async function deleteEntry(formData: FormData) {
   await getDb()
     .delete(table)
     .where(and(eq(table.id, id), eq(table.domainId, domainId)));
+  updateTag(knowledgeTag(domainId));
   refresh();
 }
 
