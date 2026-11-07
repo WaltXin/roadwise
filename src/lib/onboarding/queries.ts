@@ -8,6 +8,8 @@ import { getDb } from "@/db";
 import {
   decisions,
   domains,
+  evalRuns,
+  evalSuites,
   implementations,
   onboardingMessages,
   productInputs,
@@ -104,6 +106,7 @@ export async function getWorkspace(productId: string) {
       name: products.name,
       summary: products.summary,
       repoUrl: products.repoUrl,
+      evalConnector: products.evalConnector,
       profile: products.profile,
       domainId: products.domainId,
       domainName: domains.name,
@@ -113,26 +116,35 @@ export async function getWorkspace(productId: string) {
     .where(eq(products.id, productId));
   if (!product) return null;
 
-  const [inputs, items, decisionRows, messageRows, knowledge, implementationRows] = await Promise.all([
-    db
-      .select({ id: productInputs.id, kind: productInputs.kind, title: productInputs.title })
-      .from(productInputs)
-      .where(eq(productInputs.productId, productId))
-      .orderBy(asc(productInputs.createdAt)),
-    db.select().from(roadmapItems).where(eq(roadmapItems.productId, productId)).orderBy(asc(roadmapItems.createdAt)),
-    db.select().from(decisions).where(eq(decisions.productId, productId)).orderBy(asc(decisions.createdAt)),
-    db
-      .select({ id: onboardingMessages.id, kind: onboardingMessages.kind, content: onboardingMessages.content })
-      .from(onboardingMessages)
-      .where(eq(onboardingMessages.productId, productId))
-      .orderBy(asc(onboardingMessages.seq)),
-    loadDomainKnowledge(product.domainId),
-    db
-      .select()
-      .from(implementations)
-      .where(eq(implementations.productId, productId))
-      .orderBy(asc(implementations.createdAt)),
-  ]);
+  const [inputs, items, decisionRows, messageRows, knowledge, implementationRows, suiteRows, runRows] =
+    await Promise.all([
+      db
+        .select({ id: productInputs.id, kind: productInputs.kind, title: productInputs.title })
+        .from(productInputs)
+        .where(eq(productInputs.productId, productId))
+        .orderBy(asc(productInputs.createdAt)),
+      db.select().from(roadmapItems).where(eq(roadmapItems.productId, productId)).orderBy(asc(roadmapItems.createdAt)),
+      db.select().from(decisions).where(eq(decisions.productId, productId)).orderBy(asc(decisions.createdAt)),
+      db
+        .select({ id: onboardingMessages.id, kind: onboardingMessages.kind, content: onboardingMessages.content })
+        .from(onboardingMessages)
+        .where(eq(onboardingMessages.productId, productId))
+        .orderBy(asc(onboardingMessages.seq)),
+      loadDomainKnowledge(product.domainId),
+      db
+        .select()
+        .from(implementations)
+        .where(eq(implementations.productId, productId))
+        .orderBy(asc(implementations.createdAt)),
+      db
+        .select()
+        .from(evalSuites)
+        .where(eq(evalSuites.productId, productId))
+        .orderBy(desc(evalSuites.createdAt))
+        .limit(1),
+      db.select().from(evalRuns).where(eq(evalRuns.productId, productId)).orderBy(desc(evalRuns.createdAt)).limit(6),
+    ]);
+  const suite = suiteRows[0] ?? null;
 
   const chat = toChatItems(messageRows);
 
@@ -140,6 +152,7 @@ export async function getWorkspace(productId: string) {
   const texts = [
     ...chat.map((c) => (c.type === "assistant" ? c.text : "")),
     ...items.flatMap((i) => [i.hypothesis, i.evidence ?? ""]),
+    ...(suite?.scenarios.map((sc) => sc.rationale) ?? []),
     ...decisionRows.flatMap((d) => [
       d.observed,
       d.whyItMatters,
@@ -157,7 +170,17 @@ export async function getWorkspace(productId: string) {
     if (ref) refs[key] = { label: ref.label, url: ref.url };
   }
 
-  return { product, inputs, roadmap: items, decisions: decisionRows, implementations: implementationRows, chat, refs };
+  return {
+    product,
+    inputs,
+    roadmap: items,
+    decisions: decisionRows,
+    implementations: implementationRows,
+    suite,
+    runs: suite ? runRows.filter((r) => r.suiteId === suite.id) : [],
+    chat,
+    refs,
+  };
 }
 
 export type Workspace = NonNullable<Awaited<ReturnType<typeof getWorkspace>>>;

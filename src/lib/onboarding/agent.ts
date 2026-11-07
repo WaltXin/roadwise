@@ -313,7 +313,7 @@ function echoable(content: ContentBlock[]): ContentBlock[] {
 // ---------------------------------------------------------------------------
 
 let client: Anthropic | null = null;
-function getClient() {
+export function getClient() {
   if (!process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_AUTH_TOKEN) {
     throw new OnboardingError("Roadwise isn't connected to Claude yet: set ANTHROPIC_API_KEY.");
   }

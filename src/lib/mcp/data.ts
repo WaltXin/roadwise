@@ -6,6 +6,8 @@ import { getDb } from "@/db";
 import {
   decisions,
   domains,
+  evalRuns,
+  evalSuites,
   implementations,
   productInputs,
   products,
@@ -317,4 +319,50 @@ export async function shareEvidence(input: {
     `${input.agent} shared ${input.kind === "code" ? "code findings" : "evidence"} via the Roadwise MCP server — "${input.title}":\n\n${input.content}`,
   );
   return `Shared with Roadwise as ${input.kind} for ${product.name}. Roadwise weighs it on its next turn; it does not change any decision by itself.`;
+}
+
+/**
+ * The latest verifier verdict for a product: outcome, summary and per-scenario findings.
+ * Scenario titles and findings only — never the held-out turns or checks.
+ */
+export async function verdictMarkdown(productId: string) {
+  const product = await getProduct(productId);
+  const db = getDb();
+  const [run] = await db
+    .select()
+    .from(evalRuns)
+    .where(eq(evalRuns.productId, productId))
+    .orderBy(desc(evalRuns.createdAt))
+    .limit(1);
+  if (!run) {
+    return `No verification has run for ${product.name} yet. The founder runs the Roadwise verifier on the change; ask them to, or wait for it.`;
+  }
+  const [suite] = await db.select().from(evalSuites).where(eq(evalSuites.id, run.suiteId));
+  const titles = new Map((suite?.scenarios ?? []).map((s) => [s.id, s.title]));
+  const rate = (side: typeof run.base | null, id: string) => {
+    if (!side) return "";
+    const mine = side.results.filter((r) => r.scenario === id);
+    return `${mine.filter((r) => r.passed).length}/${mine.length}`;
+  };
+  const label = { merge: "MERGE", do_not_merge: "DON'T MERGE", inconclusive: "INCONCLUSIVE", baseline: "BASELINE" }[
+    run.verdict.outcome
+  ];
+  return [
+    `# Verification for ${product.name}: ${label}`,
+    `${run.head ? `${run.base.ref} (${run.base.commit}) vs ${run.head.ref} (${run.head.commit})` : `${run.base.ref} (${run.base.commit})`} · ${run.base.runs} runs per scenario · held-out suite, text mode · verdict by ${run.judge} · ${run.createdAt.toISOString()}`,
+    run.verdict.summary,
+    "## Scenarios",
+    run.verdict.scenarios
+      .map(
+        (s) =>
+          `- ${s.id} ${titles.get(s.id) ?? ""} — ${s.status}${run.head ? ` (base ${rate(run.base, s.id)}, head ${rate(run.head, s.id)})` : ` (${rate(run.base, s.id)})`}: ${s.finding}`,
+      )
+      .join("\n"),
+    suite?.unresolved.length
+      ? `## Unresolved (not checkable in this harness)\n${suite.unresolved.map((u) => `- ${u.criterion}: ${u.reason}`).join("\n")}`
+      : "",
+    "The scenarios themselves are held out: fix the behavior the findings describe, not the test.",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 }

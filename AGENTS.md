@@ -25,7 +25,7 @@ MVP roadmap (from the one-pager):
 1. Initialize the Voice AI domain with curated sources and a clear industry framework. ← **framework built; AI-researched knowledge imported (2026-11-07) and awaiting expert review**
 2. Onboard one existing product and identify one consequential roadmap decision. ← **built: `/products` onboarding (demo product: LiveKit's front-desk booking agent)**
 3. Generate an evidence-backed recommendation combining industry intelligence with product-specific findings.
-4. Evaluate independently using predefined acceptance criteria and held-out scenarios.
+4. Evaluate independently using predefined acceptance criteria and held-out scenarios. ← **built: the Roadwise verifier (first connector: OrangeChat's LiveKit text-mode eval harness)**
 5. Update the roadmap and preserve the recommendation, decision, evidence, and follow-up result.
 
 ## Product principles (apply to code, copy, and AI output)
@@ -48,7 +48,9 @@ MVP roadmap (from the one-pager):
 - Research notes: [`docs/research/coval.md`](docs/research/coval.md) — how Coval (voice agent simulation/eval platform) works, comparable tools, and implications: Roadwise should orchestrate eval platforms for the "how to test it" step, not rebuild them.
 - `/products` — product onboarding. A founder shares a description, roadmap, code and evidence; Roadwise (Claude) reads it, fills a live profile, interviews for what's missing, rewrites the roadmap as hypotheses with evidence status, and proposes 2–3 candidate decisions recorded as the full chain. The founder corrects the profile, keeps/drops items, and chooses one decision. "Fill with demo" loads LiveKit's open-source `frontdesk` booking agent (real code + scenarios; illustrative roadmap/notes).
 - `/api/mcp` — the **Roadwise MCP server** (Streamable HTTP, bearer token `ROADWISE_MCP_TOKEN`). Coding agents (Claude Code, Codex, Cursor…) read the chosen decision and report back when they implement it. Tools: `list_products`, `get_product_context`, `get_open_decisions` (read-only); `report_implementation` (only on the *chosen* decision → stored in `implementations`, shown on the decision as "Implemented · awaiting evaluation", appended to the conversation as a note); `share_evidence` (adds a `product_inputs` row + note). Setup snippets are in the "Connect your coding agent" card on `/products/[id]`. This is how Roadwise learns a decision shipped — a report is the agent's own account, not an evaluation.
-- Not built yet: running evaluations against the acceptance criteria, follow-up verdicts, continuous signal ingestion.
+- **Verifier (held-out evaluation)** — for products with an `evalConnector`, Roadwise (Claude) writes a held-out scenario suite from the domain knowledge base + the product's profile/material + the chosen decision's acceptance criteria (`src/lib/evals/generate.ts`, stored in `eval_suites`; audio-only criteria go to `unresolved`). `npm run verify -- --product <id> --repo <path> --base <ref> [--head <ref|working>]` checks out each ref in a git worktree, runs the suite through the product's own harness via a connector runner (`connectors/orangechat/test_roadwise_suite.py`), and POSTs results to `/api/evals/runs`, where a separate verdict call (`src/lib/evals/verdict.ts`, sees only measured results) writes merge / don't merge / inconclusive / baseline into `eval_runs`. The verdict shows in the Verification panel, is appended to the conversation as evidence, and is readable by coding agents via the MCP tool `get_verdict`. Scenarios are never exposed over MCP (held out from the implementing agent).
+- Demo product #2: **OrangeChat** (the founder's real voice AI receptionist, `~/Dev/orangechat`), connector `orangechat-livekit-text`.
+- Not built yet: follow-up verdicts on production data, continuous signal ingestion, CI/PR integration of the verifier.
 
 ## Architecture
 
@@ -58,6 +60,7 @@ MVP roadmap (from the one-pager):
 - Reads: `src/lib/knowledge/queries.ts` (server-only). Writes: Server Actions in `src/lib/knowledge/actions.ts`.
 - Auth: `src/proxy.ts` (Next 16's renamed middleware) redirects signed-out visits to `/expert/*` and `/products/*` to `/expert/login`; every mutating Server Action must call `requireExpert()` first.
 - **Onboarding agent** (`src/lib/onboarding/agent.ts`): Anthropic TypeScript SDK, `claude-opus-5-5`, adaptive thinking, effort `medium`, streaming + `finalMessage()`, server-side refusal fallback (`fallbacks: "default"`). A manual tool loop with three tools — `update_profile`, `save_roadmap_item`, `propose_decision` — that write structured state to Postgres; tool inputs are validated with Zod. The domain knowledge base is rendered into the system prompt with short citable refs (`[C12]`, `[E2]`) by `knowledge-context.ts` (cached with `use cache`, tag expired by expert edits).
+- **Connectors** (`src/lib/evals/connectors.ts`): what a product's eval harness can run (settings, tools, check types, limits) — product-specific knowledge lives here, the engine stays generic. A connector needs a matching runner registered in `scripts/verify.ts`. Machine endpoints (`/api/mcp`, `/api/evals/*`) share `rejectUnauthorized` in `src/lib/api-auth.ts`.
 - **MCP server** (`src/app/api/mcp/route.ts`): `mcp-handler` 2.x on MCP SDK v2 (`@modelcontextprotocol/server`), stateless. Tool logic and Markdown output live in `src/lib/mcp/data.ts`; input problems throw `McpInputError` (returned to the agent as `isError`). Auth is one shared bearer token compared in constant time — open in local dev when `ROADWISE_MCP_TOKEN` is unset, 503 in production. `/api/*` is outside the passcode proxy, so the route must authenticate itself. Tool output resolves `[C12]`-style citations to source labels/URLs.
 - **Conversation storage is append-only** (`onboarding_messages`, `json` column): turns are stored exactly as sent/received (incl. thinking and tool blocks) and replayed unchanged — never edit or delete earlier turns (breaks preserved thinking and the prompt cache). Panel edits are appended as `note` messages so the model sees them next turn.
 
@@ -83,6 +86,7 @@ npm run db:push        # apply schema to Neon
 npm run db:seed        # Voice AI skeleton (idempotent)
 npm run db:import -- data/voice-ai/knowledge.json [--dry-run]   # load researched knowledge
 npm run db:studio      # browse the database
+npm run verify -- --product <id> --repo ~/Dev/orangechat --base main [--head <ref|working>] [--runs 3]   # held-out eval + verdict
 ```
 
 ## Deployment and workflow

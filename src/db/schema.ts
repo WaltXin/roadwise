@@ -128,6 +128,8 @@ export const products = pgTable("products", {
   name: text("name").notNull(),
   summary: text("summary").notNull().default(""),
   repoUrl: text("repo_url"),
+  /** Which eval connector can run this product's harness (see src/lib/evals/connectors.ts). */
+  evalConnector: text("eval_connector"),
   profile: jsonb("profile").$type<Record<string, ProfileValue>>().notNull().default({}),
   ...timestamps,
 });
@@ -205,6 +207,91 @@ export const implementations = pgTable("implementations", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** One check the runner applies to a scenario run. */
+export type EvalCheck =
+  | { type: "tool_called" | "tool_not_called"; tool: string }
+  | { type: "tool_arg_equals"; tool: string; arg: string; value: string }
+  | { type: "judge"; intent: string };
+
+/** A canned tool reply; `require` makes the mock reject calls missing an argument. */
+export type EvalMock = {
+  returns?: string;
+  raises?: string;
+  require?: { arg: string; contains: string; error: string };
+};
+
+/** A scenario Roadwise wrote from domain knowledge + the product's profile. Data, not code. */
+export type EvalScenario = {
+  id: string;
+  title: string;
+  /** Why this scenario matters for this product, citing knowledge refs like [C29]. */
+  rationale: string;
+  /** What it measures: an evaluation priority or a decision's acceptance criterion. */
+  measures: string;
+  refs: string[];
+  settings: Record<string, string | boolean>;
+  mocks: Record<string, EvalMock>;
+  turns: string[];
+  checks: EvalCheck[];
+};
+
+/**
+ * A generated evaluation suite for one product (optionally for one decision). Scenarios are
+ * held out: they are never exposed to the coding agent that implements a change.
+ */
+export const evalSuites = pgTable("eval_suites", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productId: productId(),
+  decisionId: uuid("decision_id").references(() => decisions.id, { onDelete: "set null" }),
+  /** The product connector that can run it, e.g. "orangechat-livekit-text". */
+  connector: text("connector").notNull(),
+  summary: text("summary").notNull(),
+  scenarios: jsonb("scenarios").$type<EvalScenario[]>().notNull(),
+  /** Criteria this harness can't check (e.g. audio timing), kept explicitly unresolved. */
+  unresolved: jsonb("unresolved").$type<{ criterion: string; reason: string }[]>().notNull().default([]),
+  refs: jsonb("refs").$type<KnowledgeRef[]>().notNull().default([]),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type EvalRunResult = {
+  scenario: string;
+  run: number;
+  passed: boolean;
+  checks: (EvalCheck & { passed: boolean; reason: string })[];
+  error: string | null;
+  transcript: { role: string; text?: string; tool?: string; args?: unknown }[];
+  seconds: number;
+};
+
+export type EvalSide = { ref: string; commit: string; runs: number; results: EvalRunResult[] };
+
+export type EvalVerdict = {
+  /** merge / do_not_merge / inconclusive for a comparison; baseline for a single run. */
+  outcome: "merge" | "do_not_merge" | "inconclusive" | "baseline";
+  summary: string;
+  scenarios: {
+    id: string;
+    finding: string;
+    status: "improved" | "regressed" | "unchanged" | "pass" | "fail" | "flaky";
+  }[];
+};
+
+/** One verifier run: the suite on a base ref (and optionally a head ref), plus the verdict. */
+export const evalRuns = pgTable("eval_runs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productId: productId(),
+  suiteId: uuid("suite_id")
+    .notNull()
+    .references(() => evalSuites.id, { onDelete: "cascade" }),
+  decisionId: uuid("decision_id").references(() => decisions.id, { onDelete: "set null" }),
+  base: jsonb("base").$type<EvalSide>().notNull(),
+  head: jsonb("head").$type<EvalSide>(),
+  verdict: jsonb("verdict").$type<EvalVerdict>().notNull(),
+  /** Model that wrote the verdict. */
+  judge: text("judge").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 /**
  * The onboarding conversation, stored as the exact Messages API turns (append-only),
  * so it can be replayed to the model unchanged — including thinking and tool blocks.
@@ -229,3 +316,5 @@ export type Product = typeof products.$inferSelect;
 export type RoadmapItem = typeof roadmapItems.$inferSelect;
 export type Decision = typeof decisions.$inferSelect;
 export type Implementation = typeof implementations.$inferSelect;
+export type EvalSuite = typeof evalSuites.$inferSelect;
+export type EvalRun = typeof evalRuns.$inferSelect;

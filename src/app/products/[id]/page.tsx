@@ -7,9 +7,11 @@ import { z } from "zod";
 import { AgentConnectPanel } from "@/components/onboarding/agent-connect-panel";
 import { ChatPanel } from "@/components/onboarding/chat-panel";
 import { DecisionsPanel } from "@/components/onboarding/decisions-panel";
+import { EvalPanel } from "@/components/onboarding/eval-panel";
 import { ProfilePanel } from "@/components/onboarding/profile-panel";
 import { RoadmapPanel } from "@/components/onboarding/roadmap-panel";
 import { appUrl } from "@/lib/app-url";
+import { connectorFor } from "@/lib/evals/connectors";
 import { PROFILE_FIELDS } from "@/lib/onboarding/profile";
 import { getWorkspace, type Workspace } from "@/lib/onboarding/queries";
 import { cn } from "@/lib/utils";
@@ -35,6 +37,7 @@ async function ProductWorkspace({ params }: { params: Promise<{ id: string }> })
   const ws = await getWorkspace(id);
   if (!ws) notFound();
   const { product } = ws;
+  const connector = connectorFor(product.evalConnector);
 
   return (
     <div className="flex flex-col gap-6">
@@ -75,6 +78,15 @@ async function ProductWorkspace({ params }: { params: Promise<{ id: string }> })
             implementations={ws.implementations}
             refs={ws.refs}
           />
+          {connector && (
+            <EvalPanel
+              productId={product.id}
+              connectorLabel={connector.label}
+              suite={ws.suite}
+              runs={ws.runs}
+              refs={ws.refs}
+            />
+          )}
           <AgentConnectPanel mcpUrl={appUrl("/api/mcp")} productName={product.name} />
           <ProfilePanel productId={product.id} profile={product.profile} />
           <RoadmapPanel productId={product.id} items={ws.roadmap} refs={ws.refs} />
@@ -100,6 +112,15 @@ function Steps({ ws }: { ws: Workspace }) {
       done: selected !== undefined && ws.implementations.some((i) => i.decisionId === selected.id),
       detail: "via coding agent",
     },
+    ...(ws.product.evalConnector
+      ? [
+          {
+            label: "Verify",
+            done: ws.runs.some((r) => r.head !== null && r.decisionId === selected?.id),
+            detail: ws.runs[0] ? ws.runs[0].verdict.outcome.replaceAll("_", " ") : "held-out eval",
+          },
+        ]
+      : []),
   ];
   return (
     <ol className="flex flex-wrap gap-x-6 gap-y-2">

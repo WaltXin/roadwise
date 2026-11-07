@@ -18,6 +18,7 @@ See [`docs/one-pager.md`](docs/one-pager.md) for the full product brief.
 | `/products` | Product onboarding: list and create products |
 | `/products/new` | Share a product (description, roadmap, code, evidence); "Fill with demo" loads LiveKit's front-desk agent |
 | `/products/[id]` | Onboarding workspace: chat with Roadwise, live profile, roadmap hypotheses, decision candidates, implementation reports |
+| `/api/evals/suite`, `/api/evals/runs` | Verifier API: fetch a held-out suite, post measured results for a verdict |
 | `/api/mcp` | Roadwise MCP server for coding agents (Claude Code, Codex): read the chosen decision, report the implementation |
 
 The four knowledge sections are defined once in [`src/lib/knowledge/sections.ts`](src/lib/knowledge/sections.ts). That config drives the forms, the list views and server-side validation. To add a field: add a column to [`src/db/schema.ts`](src/db/schema.ts), add the field to the section config, then run `npm run db:push`.
@@ -80,6 +81,7 @@ Then ask the agent: _"Use Roadwise to see the decision we chose for Front-Desk, 
 | `npm run db:seed` | Create the Voice AI domain skeleton (idempotent) |
 | `npm run db:import -- <file> [--dry-run]` | Load researched knowledge (e.g. `data/voice-ai/knowledge.json`), marked for expert review |
 | `npm run db:studio` | Browse the database in Drizzle Studio |
+| `npm run verify -- --product <id> --repo <path> --base <ref> [--head <ref\|working>]` | Run the held-out eval suite on base/head through the product's harness and get a verdict |
 
 ## Layout
 

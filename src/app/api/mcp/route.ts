@@ -1,7 +1,7 @@
 import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
 
-import { safeEqual } from "@/lib/auth/token";
+import { rejectUnauthorized } from "@/lib/api-auth";
 import {
   listProductsMarkdown,
   McpInputError,
@@ -9,6 +9,7 @@ import {
   productContextMarkdown,
   reportImplementation,
   shareEvidence,
+  verdictMarkdown,
 } from "@/lib/mcp/data";
 
 // The Roadwise MCP server: lets coding agents (Claude Code, Codex, Cursor…) read the decision
@@ -19,7 +20,7 @@ const INSTRUCTIONS = `Roadwise is a product consultant. It turns industry signal
 Working with it:
 - Before changing a product Roadwise tracks, call get_open_decisions to see what the founder chose to work on, and get_product_context for how the product is built and what's known.
 - Implement what the decision recommends, no more. The acceptance criteria define done; shipping alone doesn't.
-- When you finish, call report_implementation with what you changed and how you verified it. Report only what you actually did and ran — never claim results you didn't measure.
+- When you finish, call report_implementation with what you changed and how you verified it. Before merging, call get_verdict: Roadwise's verifier runs a held-out evaluation on your change. Report only what you actually did and ran — never claim results you didn't measure.
 - If you find facts in the code, logs or tests that bear on a decision (e.g. "the agent never confirms the spelling of emails"), share them with share_evidence. Label guesses as guesses.`;
 
 const agentName = z
@@ -114,6 +115,18 @@ const handler = createMcpHandler(
     );
 
     server.registerTool(
+      "get_verdict",
+      {
+        title: "Get verification verdict",
+        description:
+          "The latest verdict from Roadwise's verifier for a product: merge / don't merge / inconclusive, with per-scenario findings from a held-out evaluation run on the base and head code. Check this before merging. The scenarios themselves are held out.",
+        inputSchema: z.object({ product_id: z.uuid().describe("From list_products.") }),
+        annotations: { readOnlyHint: true, openWorldHint: false },
+      },
+      ({ product_id }) => run(() => verdictMarkdown(product_id)),
+    );
+
+    server.registerTool(
       "share_evidence",
       {
         title: "Share evidence",
@@ -146,25 +159,8 @@ const handler = createMcpHandler(
   },
 );
 
-/**
- * One shared bearer token (ROADWISE_MCP_TOKEN) — enough for a hackathon demo. Open in local
- * dev when unset; in production, unset means the server is off.
- */
 async function authorized(req: Request) {
-  const token = process.env.ROADWISE_MCP_TOKEN;
-  if (!token) {
-    return process.env.NODE_ENV === "production"
-      ? Response.json({ error: "The Roadwise MCP server is not configured." }, { status: 503 })
-      : handler(req);
-  }
-  const bearer = req.headers
-    .get("authorization")
-    ?.match(/^Bearer\s+(.+)$/i)?.[1]
-    ?.trim();
-  if (!bearer || !safeEqual(bearer, token)) {
-    return Response.json({ error: "Missing or invalid bearer token." }, { status: 401 });
-  }
-  return handler(req);
+  return rejectUnauthorized(req) ?? handler(req);
 }
 
 export { authorized as DELETE, authorized as GET, authorized as POST };
