@@ -1,10 +1,10 @@
 "use client";
 
-import { ChevronDownIcon, FlagIcon } from "lucide-react";
+import { BotIcon, ChevronDownIcon, ExternalLinkIcon, FlagIcon } from "lucide-react";
 import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
-import type { Decision } from "@/db/schema";
+import type { Decision, Implementation } from "@/db/schema";
 import { chooseDecision } from "@/lib/onboarding/actions";
 import { cn } from "@/lib/utils";
 
@@ -56,16 +56,65 @@ function Chain({ d, refs }: { d: Decision; refs: RefMap }) {
   );
 }
 
+const DATE = new Intl.DateTimeFormat("en", { month: "short", day: "numeric", timeZone: "UTC" });
+
+function ImplementationReports({ reports }: { reports: Implementation[] }) {
+  return (
+    <div className="flex flex-col gap-2 rounded-lg bg-background p-3 ring-1 ring-foreground/10">
+      <p className="text-xs font-medium text-muted-foreground">
+        Reported by a coding agent · not yet evaluated against the acceptance criteria
+      </p>
+      <ul className="flex flex-col gap-3">
+        {reports.map((r) => (
+          <li key={r.id} className="flex flex-col gap-1 text-sm">
+            <p className="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+              <BotIcon className="size-3.5" />
+              <span className="font-medium text-foreground">{r.reportedBy}</span>
+              <span>{DATE.format(r.createdAt)}</span>
+              {r.prUrl && (
+                <a
+                  href={r.prUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-0.5 hover:text-foreground hover:underline"
+                >
+                  Pull request <ExternalLinkIcon className="size-3" />
+                </a>
+              )}
+              {!r.prUrl && r.commitSha && <span className="font-mono">{r.commitSha.slice(0, 7)}</span>}
+            </p>
+            <p className="whitespace-pre-line text-foreground/90">{r.summary}</p>
+            {r.verification && (
+              <p className="text-xs whitespace-pre-line text-muted-foreground">
+                <span className="font-medium text-foreground/70">Verified by: </span>
+                {r.verification}
+              </p>
+            )}
+            {r.filesChanged.length > 0 && (
+              <p className="truncate font-mono text-xs text-muted-foreground" title={r.filesChanged.join(", ")}>
+                {r.filesChanged.join(" · ")}
+              </p>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function DecisionsPanel({
   productId,
   decisions,
+  implementations,
   refs,
 }: {
   productId: string;
   decisions: Decision[];
+  implementations: Implementation[];
   refs: RefMap;
 }) {
   const selected = decisions.find((d) => d.status === "selected");
+  const reports = selected ? implementations.filter((i) => i.decisionId === selected.id) : [];
   const candidates = decisions.filter((d) => d.status === "candidate");
 
   return (
@@ -88,14 +137,22 @@ export function DecisionsPanel({
       {selected && (
         <div className="flex flex-col gap-4 border-b bg-brand-soft/40 p-4">
           <div className="flex flex-col gap-2">
-            <p className="inline-flex items-center gap-1.5 text-xs font-medium text-brand">
-              <FlagIcon className="size-3.5" /> Decision record · chosen
-            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="inline-flex items-center gap-1.5 text-xs font-medium text-brand">
+                <FlagIcon className="size-3.5" /> Decision record · chosen
+              </p>
+              {reports.length > 0 && (
+                <span className="rounded-full bg-amber-500/10 px-2 py-px text-xs font-medium text-amber-700 dark:text-amber-400">
+                  Implemented · awaiting evaluation
+                </span>
+              )}
+            </div>
             <h3 className="font-semibold text-pretty">{selected.title}</h3>
             <Levels d={selected} />
           </div>
           <Chain d={selected} refs={refs} />
           <KnowledgeLinks refs={selected.refs} />
+          {reports.length > 0 && <ImplementationReports reports={reports} />}
         </div>
       )}
 

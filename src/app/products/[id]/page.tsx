@@ -4,10 +4,12 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { z } from "zod";
 
+import { AgentConnectPanel } from "@/components/onboarding/agent-connect-panel";
 import { ChatPanel } from "@/components/onboarding/chat-panel";
 import { DecisionsPanel } from "@/components/onboarding/decisions-panel";
 import { ProfilePanel } from "@/components/onboarding/profile-panel";
 import { RoadmapPanel } from "@/components/onboarding/roadmap-panel";
+import { appUrl } from "@/lib/app-url";
 import { PROFILE_FIELDS } from "@/lib/onboarding/profile";
 import { getWorkspace, type Workspace } from "@/lib/onboarding/queries";
 import { cn } from "@/lib/utils";
@@ -67,7 +69,13 @@ async function ProductWorkspace({ params }: { params: Promise<{ id: string }> })
           />
         </div>
         <div className="flex min-w-0 flex-col gap-6">
-          <DecisionsPanel productId={product.id} decisions={ws.decisions} refs={ws.refs} />
+          <DecisionsPanel
+            productId={product.id}
+            decisions={ws.decisions}
+            implementations={ws.implementations}
+            refs={ws.refs}
+          />
+          <AgentConnectPanel mcpUrl={appUrl("/api/mcp")} productName={product.name} />
           <ProfilePanel productId={product.id} profile={product.profile} />
           <RoadmapPanel productId={product.id} items={ws.roadmap} refs={ws.refs} />
         </div>
@@ -78,13 +86,19 @@ async function ProductWorkspace({ params }: { params: Promise<{ id: string }> })
 
 function Steps({ ws }: { ws: Workspace }) {
   const known = PROFILE_FIELDS.filter((f) => ws.product.profile[f.key]).length;
+  const selected = ws.decisions.find((d) => d.status === "selected");
   const steps = [
     { label: "Understand the product", done: known >= 6, detail: `${known}/${PROFILE_FIELDS.length} known` },
     { label: "Roadmap as hypotheses", done: ws.roadmap.length > 0, detail: `${ws.roadmap.length} items` },
     {
       label: "Choose the first decision",
-      done: ws.decisions.some((d) => d.status === "selected"),
+      done: selected !== undefined,
       detail: `${ws.decisions.length} candidates`,
+    },
+    {
+      label: "Implement",
+      done: selected !== undefined && ws.implementations.some((i) => i.decisionId === selected.id),
+      detail: "via coding agent",
     },
   ];
   return (

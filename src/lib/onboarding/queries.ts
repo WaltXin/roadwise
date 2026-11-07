@@ -5,7 +5,15 @@ import { asc, desc, eq } from "drizzle-orm";
 import { connection } from "next/server";
 
 import { getDb } from "@/db";
-import { decisions, domains, onboardingMessages, productInputs, products, roadmapItems } from "@/db/schema";
+import {
+  decisions,
+  domains,
+  implementations,
+  onboardingMessages,
+  productInputs,
+  products,
+  roadmapItems,
+} from "@/db/schema";
 
 import { loadDomainKnowledge } from "./knowledge-context";
 
@@ -105,7 +113,7 @@ export async function getWorkspace(productId: string) {
     .where(eq(products.id, productId));
   if (!product) return null;
 
-  const [inputs, items, decisionRows, messageRows, knowledge] = await Promise.all([
+  const [inputs, items, decisionRows, messageRows, knowledge, implementationRows] = await Promise.all([
     db
       .select({ id: productInputs.id, kind: productInputs.kind, title: productInputs.title })
       .from(productInputs)
@@ -119,6 +127,11 @@ export async function getWorkspace(productId: string) {
       .where(eq(onboardingMessages.productId, productId))
       .orderBy(asc(onboardingMessages.seq)),
     loadDomainKnowledge(product.domainId),
+    db
+      .select()
+      .from(implementations)
+      .where(eq(implementations.productId, productId))
+      .orderBy(asc(implementations.createdAt)),
   ]);
 
   const chat = toChatItems(messageRows);
@@ -144,7 +157,7 @@ export async function getWorkspace(productId: string) {
     if (ref) refs[key] = { label: ref.label, url: ref.url };
   }
 
-  return { product, inputs, roadmap: items, decisions: decisionRows, chat, refs };
+  return { product, inputs, roadmap: items, decisions: decisionRows, implementations: implementationRows, chat, refs };
 }
 
 export type Workspace = NonNullable<Awaited<ReturnType<typeof getWorkspace>>>;

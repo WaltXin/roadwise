@@ -47,7 +47,8 @@ MVP roadmap (from the one-pager):
 - Voice AI knowledge base: ~83 sources, 36 context entries, 6 evaluation priorities with measures and guardrails, 16 research questions — researched 2026-11-07, stored in `data/voice-ai/knowledge.json`, imported with `npm run db:import`, all marked for expert review.
 - Research notes: [`docs/research/coval.md`](docs/research/coval.md) — how Coval (voice agent simulation/eval platform) works, comparable tools, and implications: Roadwise should orchestrate eval platforms for the "how to test it" step, not rebuild them.
 - `/products` — product onboarding. A founder shares a description, roadmap, code and evidence; Roadwise (Claude) reads it, fills a live profile, interviews for what's missing, rewrites the roadmap as hypotheses with evidence status, and proposes 2–3 candidate decisions recorded as the full chain. The founder corrects the profile, keeps/drops items, and chooses one decision. "Fill with demo" loads LiveKit's open-source `frontdesk` booking agent (real code + scenarios; illustrative roadmap/notes).
-- Not built yet: code-change detection (GitHub), running evaluations, follow-up verdicts, continuous signal ingestion.
+- `/api/mcp` — the **Roadwise MCP server** (Streamable HTTP, bearer token `ROADWISE_MCP_TOKEN`). Coding agents (Claude Code, Codex, Cursor…) read the chosen decision and report back when they implement it. Tools: `list_products`, `get_product_context`, `get_open_decisions` (read-only); `report_implementation` (only on the *chosen* decision → stored in `implementations`, shown on the decision as "Implemented · awaiting evaluation", appended to the conversation as a note); `share_evidence` (adds a `product_inputs` row + note). Setup snippets are in the "Connect your coding agent" card on `/products/[id]`. This is how Roadwise learns a decision shipped — a report is the agent's own account, not an evaluation.
+- Not built yet: running evaluations against the acceptance criteria, follow-up verdicts, continuous signal ingestion.
 
 ## Architecture
 
@@ -57,6 +58,7 @@ MVP roadmap (from the one-pager):
 - Reads: `src/lib/knowledge/queries.ts` (server-only). Writes: Server Actions in `src/lib/knowledge/actions.ts`.
 - Auth: `src/proxy.ts` (Next 16's renamed middleware) redirects signed-out visits to `/expert/*` and `/products/*` to `/expert/login`; every mutating Server Action must call `requireExpert()` first.
 - **Onboarding agent** (`src/lib/onboarding/agent.ts`): Anthropic TypeScript SDK, `claude-opus-5-5`, adaptive thinking, effort `medium`, streaming + `finalMessage()`, server-side refusal fallback (`fallbacks: "default"`). A manual tool loop with three tools — `update_profile`, `save_roadmap_item`, `propose_decision` — that write structured state to Postgres; tool inputs are validated with Zod. The domain knowledge base is rendered into the system prompt with short citable refs (`[C12]`, `[E2]`) by `knowledge-context.ts` (cached with `use cache`, tag expired by expert edits).
+- **MCP server** (`src/app/api/mcp/route.ts`): `mcp-handler` 2.x on MCP SDK v2 (`@modelcontextprotocol/server`), stateless. Tool logic and Markdown output live in `src/lib/mcp/data.ts`; input problems throw `McpInputError` (returned to the agent as `isError`). Auth is one shared bearer token compared in constant time — open in local dev when `ROADWISE_MCP_TOKEN` is unset, 503 in production. `/api/*` is outside the passcode proxy, so the route must authenticate itself. Tool output resolves `[C12]`-style citations to source labels/URLs.
 - **Conversation storage is append-only** (`onboarding_messages`, `json` column): turns are stored exactly as sent/received (incl. thinking and tool blocks) and replayed unchanged — never edit or delete earlier turns (breaks preserved thinking and the prompt cache). Panel edits are appended as `note` messages so the model sees them next turn.
 
 ## Conventions
@@ -86,6 +88,6 @@ npm run db:studio      # browse the database
 ## Deployment and workflow
 
 - Vercel project `waltxins-projects/roadwise`; production is https://roadwise-flax.vercel.app. **Pushing to `main` deploys to production.**
-- Env vars live in Vercel (`DATABASE_URL`, `EXPERT_PASSCODE`, `ANTHROPIC_API_KEY`, …); never commit `.env*` or secrets.
+- Env vars live in Vercel (`DATABASE_URL`, `EXPERT_PASSCODE`, `ANTHROPIC_API_KEY`, `ROADWISE_MCP_TOKEN`, …); never commit `.env*` or secrets.
 - Onboarding turns take ~30–70 s (several model calls with tools); `/products/[id]` sets `maxDuration = 300` for its Server Actions, and the chat polls `router.refresh()` while a turn runs so the panels fill in live.
 - The owner directs git steps explicitly: commit, merge to `main`, and push only when asked. Do work on a branch and fast-forward `main`.

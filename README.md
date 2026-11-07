@@ -17,7 +17,8 @@ See [`docs/one-pager.md`](docs/one-pager.md) for the full product brief.
 | `/expert/[domain]/questions` | Research questions that could change a customer's roadmap |
 | `/products` | Product onboarding: list and create products |
 | `/products/new` | Share a product (description, roadmap, code, evidence); "Fill with demo" loads LiveKit's front-desk agent |
-| `/products/[id]` | Onboarding workspace: chat with Roadwise, live profile, roadmap hypotheses, decision candidates |
+| `/products/[id]` | Onboarding workspace: chat with Roadwise, live profile, roadmap hypotheses, decision candidates, implementation reports |
+| `/api/mcp` | Roadwise MCP server for coding agents (Claude Code, Codex): read the chosen decision, report the implementation |
 
 The four knowledge sections are defined once in [`src/lib/knowledge/sections.ts`](src/lib/knowledge/sections.ts). That config drives the forms, the list views and server-side validation. To add a field: add a column to [`src/db/schema.ts`](src/db/schema.ts), add the field to the section config, then run `npm run db:push`.
 
@@ -47,6 +48,26 @@ Open [http://localhost:3000](http://localhost:3000).
 | `DATABASE_URL` | Neon Postgres connection string. Added by the Neon integration. |
 | `EXPERT_PASSCODE` | Shared passcode for the signed-in app (expert console and product workspaces). If unset, it's open in local dev and locked in production. |
 | `ANTHROPIC_API_KEY` | Claude API key for the onboarding agent. |
+| `ROADWISE_MCP_TOKEN` | Bearer token for `/api/mcp`. If unset, the MCP server is open in local dev and off in production. |
+
+## Connecting a coding agent
+
+```bash
+export ROADWISE_MCP_TOKEN=…   # from Vercel / the workspace owner
+
+# Claude Code
+claude mcp add --transport http roadwise https://roadwise-flax.vercel.app/api/mcp \
+  --header "Authorization: Bearer $ROADWISE_MCP_TOKEN"
+```
+
+```toml
+# Codex: ~/.codex/config.toml
+[mcp_servers.roadwise]
+url = "https://roadwise-flax.vercel.app/api/mcp"
+bearer_token_env_var = "ROADWISE_MCP_TOKEN"
+```
+
+Then ask the agent: _"Use Roadwise to see the decision we chose for Front-Desk, implement it, and report back."_
 
 ## Scripts
 

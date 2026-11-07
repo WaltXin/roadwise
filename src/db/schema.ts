@@ -183,6 +183,29 @@ export const decisions = pgTable("decisions", {
 });
 
 /**
+ * A coding agent's report (via the Roadwise MCP server) that it implemented a chosen decision.
+ * Append-only: a decision can collect several reports (e.g. a follow-up fix). Implemented is
+ * not the end of the loop — the change still has to pass the decision's acceptance criteria.
+ */
+export const implementations = pgTable("implementations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productId: productId(),
+  decisionId: uuid("decision_id")
+    .notNull()
+    .references(() => decisions.id, { onDelete: "cascade" }),
+  summary: text("summary").notNull(),
+  prUrl: text("pr_url"),
+  branch: text("branch"),
+  commitSha: text("commit_sha"),
+  filesChanged: jsonb("files_changed").$type<string[]>().notNull().default([]),
+  /** What the agent ran or checked to verify the change, in its own words. */
+  verification: text("verification"),
+  /** The MCP client that reported it, e.g. "claude-code 2.1". */
+  reportedBy: text("reported_by").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
  * The onboarding conversation, stored as the exact Messages API turns (append-only),
  * so it can be replayed to the model unchanged — including thinking and tool blocks.
  */
@@ -205,3 +228,4 @@ export const onboardingMessages = pgTable(
 export type Product = typeof products.$inferSelect;
 export type RoadmapItem = typeof roadmapItems.$inferSelect;
 export type Decision = typeof decisions.$inferSelect;
+export type Implementation = typeof implementations.$inferSelect;
